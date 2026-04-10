@@ -17,7 +17,7 @@ export async function GET(_req: NextRequest, { params }: Props) {
 export async function PUT(req: NextRequest, { params }: Props) {
   const { id } = await params;
   const body = await req.json();
-  const { title, category, description, image, featured } = body;
+  const { title, category, description, image, media, featured } = body;
 
   const projects = readProjects();
   const index = projects.findIndex((p) => p.id === id);
@@ -30,6 +30,7 @@ export async function PUT(req: NextRequest, { params }: Props) {
     categoryLabel: categoryLabels[category as Category] ?? category,
     description: description ?? "",
     image,
+    media: media ?? [],
     featured: Boolean(featured),
   };
 
