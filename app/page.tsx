@@ -1,3 +1,4 @@
+import GradientHero from "@/components/sections/GradientHero";
 import HeroSlider from "@/components/sections/HeroSlider";
 import ServicesSection from "@/components/sections/ServicesSection";
 import PortfolioPreview from "@/components/sections/PortfolioPreview";
@@ -19,6 +20,7 @@ export default async function HomePage() {
 
     return (
       <>
+        <GradientHero />
         <HeroSlider slides={slides} />
         <ServicesSection />
         <PortfolioPreview projects={allProjects.slice(0, 6)} />
