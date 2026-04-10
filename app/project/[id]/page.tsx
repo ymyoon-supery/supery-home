@@ -2,16 +2,14 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { categoryLabels } from "@/lib/projects";
-import { readProjects, readProjectsAsync, getProjectByIdFromData } from "@/lib/data";
+import { readProjectsAsync, getProjectByIdFromData } from "@/lib/data";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ id: string }>;
-}
-
-export async function generateStaticParams() {
-  return readProjects().map((p) => ({ id: p.id }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
