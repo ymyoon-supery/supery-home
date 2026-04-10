@@ -2,6 +2,7 @@
 
 import AnimatedGradient from "@/components/ui/AnimatedGradient";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export default function GradientHero() {
   return (
@@ -18,14 +19,22 @@ export default function GradientHero() {
         >
           Marketing Agency
         </motion.p>
-        <motion.h1
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.4 }}
-          className="text-6xl md:text-8xl lg:text-[10rem] font-bold text-white leading-none tracking-tight mb-8"
+          className="mb-8"
         >
-          SUPER Y
-        </motion.h1>
+          <Image
+            src="https://res.cloudinary.com/deitwd6wh/image/upload/v1775807828/Logo_white_dia_wfd3jw.png"
+            alt="SUPER Y"
+            width={480}
+            height={120}
+            className="mx-auto w-64 md:w-96 lg:w-[480px] h-auto object-contain"
+            unoptimized
+            priority
+          />
+        </motion.div>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
