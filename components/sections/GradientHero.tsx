@@ -107,7 +107,7 @@ export default function GradientHero() {
             alt="SUPER Y"
             width={480}
             height={120}
-            className="mx-auto w-64 md:w-96 lg:w-[480px] h-auto object-contain"
+            className="mx-auto w-44 md:w-[268px] lg:w-[336px] h-auto object-contain"
             unoptimized
             priority
           />
