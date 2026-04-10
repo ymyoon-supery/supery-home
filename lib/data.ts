@@ -1,4 +1,3 @@
-import "server-only";
 import fs from "fs";
 import path from "path";
 import { projects as staticProjects, type Project, type Category } from "./projects";
@@ -7,19 +6,26 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "projects.json");
 
 function ensureDataFile(): void {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(staticProjects, null, 2), "utf-8");
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (!fs.existsSync(DATA_FILE)) {
+      fs.writeFileSync(DATA_FILE, JSON.stringify(staticProjects, null, 2), "utf-8");
+    }
+  } catch {
+    // 파일시스템 접근 불가 환경에서는 정적 데이터 사용
   }
 }
 
 export function readProjects(): Project[] {
-  ensureDataFile();
   try {
-    return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+    ensureDataFile();
+    if (fs.existsSync(DATA_FILE)) {
+      return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+    }
   } catch {
-    return staticProjects;
+    // fallback
   }
+  return staticProjects;
 }
 
 export function writeProjects(projects: Project[]): void {
