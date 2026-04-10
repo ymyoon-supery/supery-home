@@ -9,7 +9,7 @@ export default function Footer() {
           {/* Logo & tagline */}
           <div className="space-y-4">
             <Image
-              src="https://cdn.imweb.me/thumbnail/20260225/6476e15768ae7.png"
+              src="https://res.cloudinary.com/deitwd6wh/image/upload/v1775798099/logo_light_nrjg4s.png"
               alt="SUPER Y"
               width={120}
               height={36}

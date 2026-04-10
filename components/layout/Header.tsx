@@ -68,8 +68,8 @@ export default function Header() {
   // 밝은 배경일 때: 컬러 로고
   const logoSrc =
     (isHome && !scrolled && !menuOpen) || theme === "dark"
-      ? "https://cdn.imweb.me/thumbnail/20260225/6476e15768ae7.png"
-      : "https://cdn.imweb.me/thumbnail/20260225/b46c0438a299b.png";
+      ? "https://res.cloudinary.com/deitwd6wh/image/upload/v1775798099/logo_light_nrjg4s.png"
+      : "https://res.cloudinary.com/deitwd6wh/image/upload/v1775798099/logo_dark_pqxuzk.png";
 
   const navTextClass = (active: boolean) =>
     isHome && !scrolled
