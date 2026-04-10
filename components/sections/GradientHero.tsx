@@ -1,13 +1,90 @@
 "use client";
 
-import AnimatedGradient from "@/components/ui/AnimatedGradient";
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Image from "next/image";
 
 export default function GradientHero() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+
+  const springX = useSpring(mouseX, { stiffness: 40, damping: 18 });
+  const springY = useSpring(mouseY, { stiffness: 40, damping: 18 });
+
+  // 각 블롭마다 다른 속도·방향으로 parallax
+  const b1x = useTransform(springX, [0, 1], ["-15%", "15%"]);
+  const b1y = useTransform(springY, [0, 1], ["-15%", "15%"]);
+  const b2x = useTransform(springX, [0, 1], ["10%", "-10%"]);
+  const b2y = useTransform(springY, [0, 1], ["10%", "-10%"]);
+  const b3x = useTransform(springX, [0, 1], ["-8%", "12%"]);
+  const b3y = useTransform(springY, [0, 1], ["8%", "-12%"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    mouseX.set((e.clientX - rect.left) / rect.width);
+    mouseY.set((e.clientY - rect.top) / rect.height);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0.5);
+    mouseY.set(0.5);
+  };
+
   return (
-    <section className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-[#0a0a0a]">
-      <AnimatedGradient />
+    <section
+      ref={sectionRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-[#0a0a0a]"
+    >
+      {/* Mouse-reactive gradient blobs */}
+      <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+
+        {/* Blob 1 — 보라 (top-left) */}
+        <motion.div
+          style={{
+            position: "absolute",
+            top: "-5%", left: "-5%",
+            width: "60%", height: "60%",
+            borderRadius: "50%",
+            background: "#7c3aed",
+            filter: "blur(60px)",
+            opacity: 0.75,
+            x: b1x, y: b1y,
+          }}
+        />
+
+        {/* Blob 2 — 파랑 (top-right) */}
+        <motion.div
+          style={{
+            position: "absolute",
+            top: "5%", right: "-5%",
+            width: "55%", height: "55%",
+            borderRadius: "50%",
+            background: "#2563eb",
+            filter: "blur(70px)",
+            opacity: 0.65,
+            x: b2x, y: b2y,
+          }}
+        />
+
+        {/* Blob 3 — 청록 (bottom-center) */}
+        <motion.div
+          style={{
+            position: "absolute",
+            bottom: "-10%", left: "20%",
+            width: "55%", height: "55%",
+            borderRadius: "50%",
+            background: "#0891b2",
+            filter: "blur(65px)",
+            opacity: 0.6,
+            x: b3x, y: b3y,
+          }}
+        />
+      </div>
 
       {/* Content */}
       <div className="relative z-10 text-center px-6">
