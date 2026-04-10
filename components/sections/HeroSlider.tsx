@@ -11,6 +11,7 @@ interface Props {
 }
 
 export default function HeroSlider({ slides }: Props) {
+  if (!slides || slides.length === 0) return null;
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1); // 1: next, -1: prev
 

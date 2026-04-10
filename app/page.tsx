@@ -1,7 +1,7 @@
 import HeroSlider from "@/components/sections/HeroSlider";
 import ServicesSection from "@/components/sections/ServicesSection";
 import PortfolioPreview from "@/components/sections/PortfolioPreview";
-import { getFeaturedProjectsFromData } from "@/lib/data";
+import { getFeaturedProjectsFromData, readProjectsAsync } from "@/lib/data";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const featured = await getFeaturedProjectsFromData();
-  const slides = featured.slice(0, 5);
+  const allProjects = featured.length > 0 ? featured : await readProjectsAsync();
+  const slides = allProjects.slice(0, 5);
 
   return (
     <>
