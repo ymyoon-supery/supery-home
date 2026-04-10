@@ -51,8 +51,8 @@ export default function GradientHero() {
             width: "60%", height: "60%",
             borderRadius: "50%",
             background: "#7c3aed",
-            filter: "blur(60px)",
-            opacity: 0.75,
+            filter: "blur(80px)",
+            opacity: 0.45,
             x: b1x, y: b1y,
           }}
         />
@@ -65,8 +65,8 @@ export default function GradientHero() {
             width: "55%", height: "55%",
             borderRadius: "50%",
             background: "#2563eb",
-            filter: "blur(70px)",
-            opacity: 0.65,
+            filter: "blur(90px)",
+            opacity: 0.4,
             x: b2x, y: b2y,
           }}
         />
@@ -79,8 +79,8 @@ export default function GradientHero() {
             width: "55%", height: "55%",
             borderRadius: "50%",
             background: "#0891b2",
-            filter: "blur(65px)",
-            opacity: 0.6,
+            filter: "blur(85px)",
+            opacity: 0.45,
             x: b3x, y: b3y,
           }}
         />
