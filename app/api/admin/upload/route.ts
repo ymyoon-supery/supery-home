@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -15,14 +20,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "이미지 파일만 업로드 가능합니다." }, { status: 400 });
   }
 
-  const ext = file.name.split(".").pop() ?? "jpg";
-  const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-
-  await mkdir(uploadDir, { recursive: true });
-
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadDir, filename), buffer);
+  const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-  return NextResponse.json({ url: `/uploads/${filename}` });
+  const result = await cloudinary.uploader.upload(base64, {
+    folder: "supery",
+    resource_type: "image",
+  });
+
+  return NextResponse.json({ url: result.secure_url });
 }

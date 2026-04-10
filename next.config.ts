@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "cdn.imweb.me",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
     ],
   },
 };
