@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Backgrounds */
+    --bg-main: #FAFAF8;
+    --bg-card: #FFFFFF;
+    --bg-inverse: #1A1A1A;
+
+    /* Text — 라이트모드: 어두운 텍스트 */
+    --text-heading: #1A1A1A;
+    --text-body: #444444;
+    --text-caption: #777777;
+    --text-on-inverse: #FFFFFF;
+
+    /* Interactive */
+    --btn-bg: #1A1A1A;
+    --btn-text: #FFFFFF;
+    --link-hover: #1A1A1A;
+
+    /* Border */
+    --border: #E0E0DC;
+  }
+
+  .dark {
+    --bg-main: #111111;
+    --bg-card: #1C1C1C;
+    --bg-inverse: #0A0A0A;
+
+    /* Text — 다크모드: 밝은 텍스트 */
+    --text-heading: #F0F0EE;
+    --text-body: #BBBBBB;
+    --text-caption: #888888;
+    --text-on-inverse: #F0F0EE;
+
+    --btn-bg: #F0F0EE;
+    --btn-text: #111111;
+    --link-hover: #F0F0EE;
+
+    --border: #2A2A2A;
+  }
+}
+
+@theme inline {
+  --color-bg-main: var(--bg-main);
+  --color-bg-card: var(--bg-card);
+  --color-bg-inverse: var(--bg-inverse);
+  --color-text-heading: var(--text-heading);
+  --color-text-body: var(--text-body);
+  --color-text-caption: var(--text-caption);
+  --color-text-on-inverse: var(--text-on-inverse);
+  --color-btn-bg: var(--btn-bg);
+  --color-btn-text: var(--btn-text);
+  --color-border: var(--border);
+  --font-sans: 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-heading);
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CCCCCC; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #999999; }
+
+::selection {
+  background: #2D2D2D;
+  color: #FAFAF8;
+}
+
+.section-padding {
+  padding-top: 3.5rem;
+  padding-bottom: 3.5rem;
+}
+@media (min-width: 768px) {
+  .section-padding { padding-top: 5rem; padding-bottom: 5rem; }
+}
+@media (min-width: 1024px) {
+  .section-padding { padding-top: 6rem; padding-bottom: 6rem; }
+}
