@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Project } from "@/lib/projects";
+import AnimatedGradient from "@/components/ui/AnimatedGradient";
 
 interface Props {
   slides: Project[];
@@ -55,7 +56,10 @@ export default function HeroSlider({ slides }: Props) {
   };
 
   return (
-    <section className="relative w-full h-screen min-h-[500px] overflow-hidden bg-[#111]">
+    <section className="relative w-full h-screen min-h-[500px] overflow-hidden bg-[#0a0a0a]">
+      {/* Animated gradient background */}
+      <AnimatedGradient />
+
       {/* Slides */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
