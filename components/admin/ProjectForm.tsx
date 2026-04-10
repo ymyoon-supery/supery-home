@@ -40,16 +40,21 @@ export default function ProjectForm({ project }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-    setUploading(false);
-    if (res.ok) {
-      const { url } = await res.json();
-      setForm((prev) => ({ ...prev, image: url }));
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setError(`업로드 실패: ${data.error ?? res.status}`);
+    setError("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setForm((prev) => ({ ...prev, image: data.url }));
+      } else {
+        setError(`업로드 실패: ${data.error ?? res.status}`);
+      }
+    } catch (err) {
+      setError(`업로드 오류: ${String(err)}`);
+    } finally {
+      setUploading(false);
     }
   };
 
