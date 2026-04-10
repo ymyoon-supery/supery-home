@@ -10,7 +10,7 @@ interface Props {
 
 export default function AnimatedGradient({
   base = "#0a0a0a",
-  colors = ["#4f1b7a", "#1a3a6b", "#0d5c5c"],
+  colors = ["#7c3aed", "#2563eb", "#0891b2"],
   className = "",
 }: Props) {
   return (
@@ -21,48 +21,48 @@ export default function AnimatedGradient({
       {/* Base background */}
       <div className="absolute inset-0" style={{ background: base }} />
 
-      {/* Blob 1 — top-left */}
+      {/* Blob 1 — top-left (보라) */}
       <div
         className="absolute animate-blob-1"
         style={{
-          top: "-15%",
-          left: "-10%",
-          width: "55%",
-          height: "55%",
+          top: "-5%",
+          left: "-5%",
+          width: "60%",
+          height: "60%",
           borderRadius: "50%",
           background: colors[0],
-          filter: "blur(100px)",
-          opacity: 0.5,
+          filter: "blur(60px)",
+          opacity: 0.75,
         }}
       />
 
-      {/* Blob 2 — top-right */}
+      {/* Blob 2 — top-right (파랑) */}
       <div
         className="absolute animate-blob-2"
         style={{
-          top: "10%",
-          right: "-15%",
-          width: "50%",
-          height: "50%",
+          top: "5%",
+          right: "-5%",
+          width: "55%",
+          height: "55%",
           borderRadius: "50%",
           background: colors[1],
-          filter: "blur(110px)",
-          opacity: 0.45,
+          filter: "blur(70px)",
+          opacity: 0.65,
         }}
       />
 
-      {/* Blob 3 — bottom-center */}
+      {/* Blob 3 — bottom-center (청록) */}
       <div
         className="absolute animate-blob-3"
         style={{
-          bottom: "-20%",
-          left: "25%",
-          width: "50%",
-          height: "50%",
+          bottom: "-10%",
+          left: "20%",
+          width: "55%",
+          height: "55%",
           borderRadius: "50%",
           background: colors[2],
-          filter: "blur(120px)",
-          opacity: 0.4,
+          filter: "blur(65px)",
+          opacity: 0.6,
         }}
       />
     </div>
