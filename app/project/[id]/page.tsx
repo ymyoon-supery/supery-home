@@ -18,10 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const project = getProjectByIdFromData(id);
   if (!project) return { title: "Project Not Found" };
-  return {
-    title: project.title,
-    description: project.description,
-  };
+  return { title: project.title, description: project.description };
 }
 
 export default async function ProjectDetailPage({ params }: Props) {
@@ -29,6 +26,10 @@ export default async function ProjectDetailPage({ params }: Props) {
   const project = getProjectByIdFromData(id);
   if (!project) notFound();
   const projects = readProjects();
+
+  const mediaList = project.media?.length
+    ? project.media
+    : [{ url: project.image, type: "image" as const }];
 
   return (
     <div className="pt-16 min-h-screen bg-[var(--bg-main)]">
@@ -45,7 +46,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         </Link>
       </div>
 
-      {/* Hero image */}
+      {/* Hero (대표 이미지) */}
       <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
         <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden bg-[var(--bg-card)]">
           <Image
@@ -54,13 +55,14 @@ export default async function ProjectDetailPage({ params }: Props) {
             fill
             className="object-cover"
             priority
+            unoptimized
             sizes="(max-width: 1280px) 100vw, 1280px"
           />
         </div>
       </AnimatedSection>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
+      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12">
         <AnimatedSection>
           <p className="text-xs font-semibold tracking-[0.3em] text-[var(--text-caption)] uppercase mb-4">
             {project.categoryLabel}
@@ -74,6 +76,41 @@ export default async function ProjectDetailPage({ params }: Props) {
             </p>
           )}
         </AnimatedSection>
+
+        {/* Media gallery (대표 이미지 제외 나머지) */}
+        {mediaList.length > 1 && (
+          <>
+            <div className="h-px bg-[var(--border)] my-12" />
+            <AnimatedSection>
+              <h2 className="text-sm font-semibold tracking-[0.2em] text-[var(--text-caption)] uppercase mb-6">
+                Gallery
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {mediaList.slice(1).map((item, i) => (
+                  <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--bg-card)]">
+                    {item.type === "video" ? (
+                      <video
+                        src={item.url}
+                        controls
+                        className="w-full h-full object-cover"
+                        playsInline
+                      />
+                    ) : (
+                      <Image
+                        src={item.url}
+                        alt={`${project.title} ${i + 2}`}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                        sizes="(max-width: 640px) 100vw, 50vw"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </AnimatedSection>
+          </>
+        )}
 
         {/* Divider */}
         <div className="h-px bg-[var(--border)] my-12" />
@@ -98,6 +135,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                     alt={related.title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    unoptimized
                     sizes="(max-width: 640px) 100vw, 50vw"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300" />

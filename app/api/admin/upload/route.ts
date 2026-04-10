@@ -8,10 +8,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "파일이 없습니다." }, { status: 400 });
   }
 
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  const allowedTypes = [
+    "image/jpeg", "image/png", "image/webp", "image/gif",
+    "video/mp4", "video/webm", "video/quicktime",
+  ];
   if (!allowedTypes.includes(file.type)) {
-    return NextResponse.json({ error: "이미지 파일만 업로드 가능합니다." }, { status: 400 });
+    return NextResponse.json({ error: "이미지 또는 동영상 파일만 업로드 가능합니다." }, { status: 400 });
   }
+
+  const isVideo = file.type.startsWith("video/");
 
   try {
     const { v2: cloudinary } = await import("cloudinary");
@@ -26,10 +31,13 @@ export async function POST(req: NextRequest) {
 
     const result = await cloudinary.uploader.upload(base64, {
       folder: "supery",
-      resource_type: "image",
+      resource_type: "auto",
     });
 
-    return NextResponse.json({ url: result.secure_url });
+    return NextResponse.json({
+      url: result.secure_url,
+      type: isVideo ? "video" : "image",
+    });
   } catch (err) {
     console.error("Cloudinary upload error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });

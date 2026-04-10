@@ -8,12 +8,18 @@ export type Category =
   | "consulting-branding"
   | "commerce";
 
+export interface MediaItem {
+  url: string;
+  type: "image" | "video";
+}
+
 export interface Project {
   id: string;
   title: string;
   category: Exclude<Category, "all">;
   categoryLabel: string;
-  image: string;
+  image: string; // 대표 이미지
+  media?: MediaItem[]; // 전체 미디어 (최대 10개)
   description?: string;
   featured?: boolean;
 }
