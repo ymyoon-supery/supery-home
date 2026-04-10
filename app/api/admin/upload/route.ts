@@ -16,9 +16,9 @@ export async function POST(req: NextRequest) {
   try {
     const { v2: cloudinary } = await import("cloudinary");
     cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
+      cloud_name: process.env.CLD_CLOUD_NAME,
+      api_key: process.env.CLD_API_KEY,
+      api_secret: process.env.CLD_API_SECRET,
     });
 
     const buffer = Buffer.from(await file.arrayBuffer());
