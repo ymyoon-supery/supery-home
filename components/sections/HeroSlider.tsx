@@ -55,7 +55,7 @@ export default function HeroSlider({ slides }: Props) {
   };
 
   return (
-    <section className="relative w-full h-screen min-h-[500px] overflow-hidden bg-[#111]">
+    <section className="relative w-full h-screen min-h-[600px] overflow-hidden bg-[#111]">
       {/* Slides */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
