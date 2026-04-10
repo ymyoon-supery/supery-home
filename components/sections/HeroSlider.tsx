@@ -11,9 +11,9 @@ interface Props {
 }
 
 export default function HeroSlider({ slides }: Props) {
-  if (!slides || slides.length === 0) return null;
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1); // 1: next, -1: prev
+  const count = slides?.length ?? 0;
 
   const goTo = useCallback(
     (index: number) => {
@@ -24,16 +24,20 @@ export default function HeroSlider({ slides }: Props) {
   );
 
   const next = useCallback(() => {
-    const nextIndex = (current + 1) % slides.length;
+    if (count === 0) return;
+    const nextIndex = (current + 1) % count;
     setDirection(1);
     setCurrent(nextIndex);
-  }, [current]);
+  }, [current, count]);
 
   // Auto-advance every 5 seconds
   useEffect(() => {
+    if (count === 0) return;
     const timer = setInterval(next, 5000);
     return () => clearInterval(timer);
-  }, [next]);
+  }, [next, count]);
+
+  if (count === 0) return null;
 
   const variants = {
     enter: (dir: number) => ({
