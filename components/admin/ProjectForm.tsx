@@ -48,7 +48,8 @@ export default function ProjectForm({ project }: Props) {
       const { url } = await res.json();
       setForm((prev) => ({ ...prev, image: url }));
     } else {
-      setError("이미지 업로드에 실패했습니다.");
+      const data = await res.json().catch(() => ({}));
+      setError(`업로드 실패: ${data.error ?? res.status}`);
     }
   };
 

@@ -23,10 +23,14 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-  const result = await cloudinary.uploader.upload(base64, {
-    folder: "supery",
-    resource_type: "image",
-  });
-
-  return NextResponse.json({ url: result.secure_url });
+  try {
+    const result = await cloudinary.uploader.upload(base64, {
+      folder: "supery",
+      resource_type: "image",
+    });
+    return NextResponse.json({ url: result.secure_url });
+  } catch (err) {
+    console.error("Cloudinary upload error:", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
 }
