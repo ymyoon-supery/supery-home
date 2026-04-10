@@ -1,13 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { readProjects } from "@/lib/data";
+import { readProjectsAsync } from "@/lib/data";
 import AdminLogout from "@/components/admin/AdminLogout";
 import AdminDeleteButton from "@/components/admin/AdminDeleteButton";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminProjectsPage() {
-  const projects = readProjects();
+export default async function AdminProjectsPage() {
+  const projects = await readProjectsAsync();
 
   return (
     <div className="min-h-screen bg-[#F5F5F3]">

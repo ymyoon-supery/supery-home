@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description: "GOOD IDEA는 좋은 인사이트에서 출발합니다. 브랜드의 가치를 극대화하는 마케팅 해답을 제시합니다.",
 };
 
-export default function HomePage() {
-  const featured = getFeaturedProjectsFromData();
+export default async function HomePage() {
+  const featured = await getFeaturedProjectsFromData();
   const slides = featured.slice(0, 5);
 
   return (

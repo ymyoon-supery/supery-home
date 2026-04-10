@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readProjects, writeProjects } from "@/lib/data";
+import { readProjectsAsync, writeProjectsAsync } from "@/lib/data";
 import { revalidatePath } from "next/cache";
 import { categoryLabels, type Category } from "@/lib/projects";
 
 export async function GET() {
-  return NextResponse.json(readProjects());
+  return NextResponse.json(await readProjectsAsync());
 }
 
 export async function POST(req: NextRequest) {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "필수 항목이 누락되었습니다." }, { status: 400 });
   }
 
-  const projects = readProjects();
+  const projects = await readProjectsAsync();
   const newProject = {
     id: crypto.randomUUID(),
     title,
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     featured: Boolean(featured),
   };
 
-  writeProjects([...projects, newProject]);
+  await writeProjectsAsync([...projects, newProject]);
   revalidatePath("/");
   revalidatePath("/project");
 

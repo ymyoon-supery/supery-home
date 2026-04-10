@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { categoryLabels } from "@/lib/projects";
-import { readProjects, getProjectByIdFromData } from "@/lib/data";
+import { readProjects, readProjectsAsync, getProjectByIdFromData } from "@/lib/data";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import type { Metadata } from "next";
 
@@ -16,16 +16,16 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const project = getProjectByIdFromData(id);
+  const project = await getProjectByIdFromData(id);
   if (!project) return { title: "Project Not Found" };
   return { title: project.title, description: project.description };
 }
 
 export default async function ProjectDetailPage({ params }: Props) {
   const { id } = await params;
-  const project = getProjectByIdFromData(id);
+  const project = await getProjectByIdFromData(id);
   if (!project) notFound();
-  const projects = readProjects();
+  const projects = await readProjectsAsync();
 
   const mediaList = project.media?.length
     ? project.media

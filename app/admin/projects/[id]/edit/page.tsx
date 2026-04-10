@@ -9,7 +9,7 @@ interface Props {
 
 export default async function EditProjectPage({ params }: Props) {
   const { id } = await params;
-  const project = getProjectByIdFromData(id);
+  const project = await getProjectByIdFromData(id);
   if (!project) notFound();
 
   return (

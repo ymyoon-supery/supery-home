@@ -1,7 +1,7 @@
 import ProjectGrid from "@/components/ui/ProjectGrid";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import { categoryLabels, type Category } from "@/lib/projects";
-import { readProjects } from "@/lib/data";
+import { readProjectsAsync } from "@/lib/data";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export default async function ProjectPage({ searchParams }: Props) {
   const { cat } = await searchParams;
   const initialCategory: Category =
     cat && cat in categoryLabels ? (cat as Category) : "all";
-  const allProjects = readProjects();
+  const allProjects = await readProjectsAsync();
 
   const heading =
     initialCategory === "all"
