@@ -9,16 +9,28 @@ export const metadata: Metadata = {
   description: "GOOD IDEA는 좋은 인사이트에서 출발합니다. 브랜드의 가치를 극대화하는 마케팅 해답을 제시합니다.",
 };
 
-export default async function HomePage() {
-  const featured = await getFeaturedProjectsFromData();
-  const allProjects = featured.length > 0 ? featured : await readProjectsAsync();
-  const slides = allProjects.slice(0, 5);
+export const dynamic = "force-dynamic";
 
-  return (
-    <>
-      <HeroSlider slides={slides} />
-      <ServicesSection />
-      <PortfolioPreview projects={featured} />
-    </>
-  );
+export default async function HomePage() {
+  try {
+    const featured = await getFeaturedProjectsFromData();
+    const allProjects = featured.length > 0 ? featured : await readProjectsAsync();
+    const slides = allProjects.slice(0, 5);
+
+    return (
+      <>
+        <HeroSlider slides={slides} />
+        <ServicesSection />
+        <PortfolioPreview projects={allProjects.slice(0, 6)} />
+      </>
+    );
+  } catch (err) {
+    return (
+      <div style={{ padding: 40, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
+        <h2>Homepage Error (debug)</h2>
+        <p>{String(err)}</p>
+        {err instanceof Error && <p>{err.stack}</p>}
+      </div>
+    );
+  }
 }
