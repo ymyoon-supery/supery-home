@@ -29,6 +29,17 @@ export default async function ProjectDetailPage({ params }: Props) {
     ? project.media
     : [{ url: project.image, type: "image" as const }];
 
+  // 대표 항목 식별 (project.image와 매칭)
+  const coverIndex = mediaList.findIndex((item) => {
+    if (item.type === "youtube") {
+      return `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg` === project.image;
+    }
+    return item.url === project.image;
+  });
+  const effectiveCoverIndex = coverIndex >= 0 ? coverIndex : 0;
+  const coverItem = mediaList[effectiveCoverIndex];
+  const galleryItems = mediaList.filter((_, i) => i !== effectiveCoverIndex);
+
   return (
     <div className="pt-16 min-h-screen bg-[var(--bg-main)]">
       {/* Back button */}
@@ -44,19 +55,31 @@ export default async function ProjectDetailPage({ params }: Props) {
         </Link>
       </div>
 
-      {/* Hero (대표 이미지) */}
+      {/* Hero (대표 이미지 or 유튜브 임베드) */}
       <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
-        <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden bg-[var(--bg-card)]">
-          <Image
-            src={project.image}
-            alt={project.title}
-            fill
-            className="object-cover"
-            priority
-            unoptimized
-            sizes="(max-width: 1280px) 100vw, 1280px"
-          />
-        </div>
+        {coverItem?.type === "youtube" ? (
+          <div className="w-full aspect-video rounded-3xl overflow-hidden bg-[var(--bg-card)]">
+            <iframe
+              src={`https://www.youtube.com/embed/${coverItem.videoId}`}
+              title={project.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full"
+            />
+          </div>
+        ) : (
+          <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden bg-[var(--bg-card)]">
+            <Image
+              src={project.image}
+              alt={project.title}
+              fill
+              className="object-cover"
+              priority
+              unoptimized
+              sizes="(max-width: 1280px) 100vw, 1280px"
+            />
+          </div>
+        )}
       </AnimatedSection>
 
       {/* Content */}
@@ -75,8 +98,8 @@ export default async function ProjectDetailPage({ params }: Props) {
           )}
         </AnimatedSection>
 
-        {/* Media gallery (대표 이미지 제외 나머지) */}
-        {mediaList.length > 1 && (
+        {/* Media gallery (대표 제외 나머지) */}
+        {galleryItems.length > 0 && (
           <>
             <div className="h-px bg-[var(--border)] my-12" />
             <AnimatedSection>
@@ -84,7 +107,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                 Gallery
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {mediaList.slice(1).map((item, i) => (
+                {galleryItems.map((item, i) => (
                   <div key={i} className="rounded-2xl overflow-hidden bg-[var(--bg-card)]">
                     {item.type === "youtube" ? (
                       <div className="aspect-video">
