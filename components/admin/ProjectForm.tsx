@@ -33,7 +33,24 @@ export default function ProjectForm({ project }: Props) {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const parseYouTubeId = (url: string): string | null => {
+    const match = url.match(
+      /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&\n?#]+)/
+    );
+    return match?.[1] ?? null;
+  };
+
+  const handleAddYoutube = () => {
+    if (mediaItems.length >= MAX_MEDIA) { setError(`최대 ${MAX_MEDIA}개까지 추가 가능합니다.`); return; }
+    const videoId = parseYouTubeId(youtubeUrl.trim());
+    if (!videoId) { setError("올바른 유튜브 URL을 입력해주세요."); return; }
+    setMediaItems((prev) => [...prev, { url: youtubeUrl.trim(), type: "youtube", videoId }]);
+    setYoutubeUrl("");
+    setError("");
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -95,9 +112,14 @@ export default function ProjectForm({ project }: Props) {
     setSaving(true);
     setError("");
 
+    const coverItem = mediaItems[coverIndex] ?? mediaItems[0];
+    const coverImageUrl = coverItem?.type === "youtube"
+      ? `https://img.youtube.com/vi/${coverItem.videoId}/maxresdefault.jpg`
+      : coverItem?.url ?? "";
+
     const payload = {
       ...form,
-      image: mediaItems[coverIndex]?.url ?? mediaItems[0]?.url ?? "",
+      image: coverImageUrl,
       media: mediaItems,
     };
 
@@ -193,16 +215,21 @@ export default function ProjectForm({ project }: Props) {
               <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-[#F5F5F3] border-2 transition-colors"
                 style={{ borderColor: i === coverIndex ? "#1A1A1A" : "#E0E0DC" }}>
 
-                {item.type === "video" ? (
+                {item.type === "youtube" ? (
+                  <Image
+                    src={`https://img.youtube.com/vi/${item.videoId}/hqdefault.jpg`}
+                    alt="" fill className="object-cover" unoptimized sizes="150px"
+                  />
+                ) : item.type === "video" ? (
                   <video src={item.url} className="w-full h-full object-cover" muted />
                 ) : (
                   <Image src={item.url} alt="" fill className="object-cover" unoptimized sizes="150px" />
                 )}
 
-                {/* Video badge */}
-                {item.type === "video" && (
+                {/* Video / YouTube badge */}
+                {(item.type === "video" || item.type === "youtube") && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${item.type === "youtube" ? "bg-red-600" : "bg-black/50"}`}>
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-4 h-4 ml-0.5">
                         <path d="M8 5v14l11-7z" />
                       </svg>
@@ -259,8 +286,33 @@ export default function ProjectForm({ project }: Props) {
           </div>
         )}
 
-        {mediaItems.length > 0 && (
+        {mediaItems.length > 0 && mediaItems[coverIndex]?.type === "video" && (
+          <p className="text-xs text-amber-500 mt-2 font-medium">대표 이미지가 없습니다. 이미지 또는 유튜브를 추가하고 ★ 아이콘으로 설정해주세요.</p>
+        )}
+        {mediaItems.length > 0 && mediaItems[coverIndex]?.type !== "video" && (
           <p className="text-xs text-[#AAA] mt-2">★ 아이콘을 눌러 대표 이미지를 변경할 수 있습니다.</p>
+        )}
+
+        {/* YouTube URL 입력 */}
+        {mediaItems.length < MAX_MEDIA && (
+          <div className="flex gap-2 mt-3">
+            <input
+              type="url"
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddYoutube())}
+              placeholder="유튜브 URL 붙여넣기 (youtube.com/watch?v=...)"
+              className="flex-1 px-3 py-2 border border-[#E0E0DC] rounded-xl text-sm text-[#1A1A1A] placeholder-[#AAA] focus:outline-none focus:border-[#1A1A1A] transition-colors bg-white"
+            />
+            <button
+              type="button"
+              onClick={handleAddYoutube}
+              disabled={!youtubeUrl.trim()}
+              className="px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-40 whitespace-nowrap"
+            >
+              유튜브 추가
+            </button>
+          </div>
         )}
       </div>
 

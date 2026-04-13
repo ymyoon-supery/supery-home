@@ -10,7 +10,8 @@ export type Category =
 
 export interface MediaItem {
   url: string;
-  type: "image" | "video";
+  type: "image" | "video" | "youtube";
+  videoId?: string; // YouTube video ID (type === "youtube" 일 때만)
 }
 
 export interface Project {

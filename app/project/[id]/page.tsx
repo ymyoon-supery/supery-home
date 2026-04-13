@@ -86,7 +86,17 @@ export default async function ProjectDetailPage({ params }: Props) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {mediaList.slice(1).map((item, i) => (
                   <div key={i} className="rounded-2xl overflow-hidden bg-[var(--bg-card)]">
-                    {item.type === "video" ? (
+                    {item.type === "youtube" ? (
+                      <div className="aspect-video">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${item.videoId}`}
+                          title={`${project.title} ${i + 2}`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="w-full h-full"
+                        />
+                      </div>
+                    ) : item.type === "video" ? (
                       <video
                         src={item.url}
                         controls
