@@ -46,15 +46,12 @@ export default async function ProjectDetailPage({ params }: Props) {
 
       {/* Hero (대표 이미지) */}
       <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
-        <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden bg-[var(--bg-card)]">
-          <Image
+        <div className="w-full rounded-3xl overflow-hidden bg-[var(--bg-card)]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={project.image}
             alt={project.title}
-            fill
-            className="object-cover"
-            priority
-            unoptimized
-            sizes="(max-width: 1280px) 100vw, 1280px"
+            className="w-full h-auto block"
           />
         </div>
       </AnimatedSection>
@@ -85,22 +82,20 @@ export default async function ProjectDetailPage({ params }: Props) {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {mediaList.slice(1).map((item, i) => (
-                  <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--bg-card)]">
+                  <div key={i} className="rounded-2xl overflow-hidden bg-[var(--bg-card)]">
                     {item.type === "video" ? (
                       <video
                         src={item.url}
                         controls
-                        className="w-full h-full object-cover"
+                        className="w-full h-auto block"
                         playsInline
                       />
                     ) : (
-                      <Image
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
                         src={item.url}
                         alt={`${project.title} ${i + 2}`}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                        sizes="(max-width: 640px) 100vw, 50vw"
+                        className="w-full h-auto block"
                       />
                     )}
                   </div>
