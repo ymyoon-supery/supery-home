@@ -4,6 +4,7 @@ import Link from "next/link";
 import { categoryLabels } from "@/lib/projects";
 import { readProjectsAsync, getProjectByIdFromData } from "@/lib/data";
 import AnimatedSection from "@/components/ui/AnimatedSection";
+import GalleryLightbox from "@/components/ui/GalleryLightbox";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -110,37 +111,7 @@ export default async function ProjectDetailPage({ params }: Props) {
               <h2 className="text-sm font-semibold tracking-[0.2em] text-[var(--text-caption)] uppercase mb-6">
                 Gallery
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {galleryItems.map((item, i) => (
-                  <div key={i} className="rounded-2xl overflow-hidden bg-[var(--bg-card)]">
-                    {item.type === "youtube" ? (
-                      <div className="aspect-video">
-                        <iframe
-                          src={`https://www.youtube.com/embed/${item.videoId}`}
-                          title={`${project.title} ${i + 2}`}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="w-full h-full"
-                        />
-                      </div>
-                    ) : item.type === "video" ? (
-                      <video
-                        src={item.url}
-                        controls
-                        className="w-full h-auto block"
-                        playsInline
-                      />
-                    ) : (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={item.url}
-                        alt={`${project.title} ${i + 2}`}
-                        className="w-full h-auto block"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+              <GalleryLightbox items={galleryItems} projectTitle={project.title} />
             </AnimatedSection>
           </>
         )}
