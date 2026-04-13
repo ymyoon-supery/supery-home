@@ -54,14 +54,24 @@ export default function ProjectForm({ project }: Props) {
     setUploading(true);
     setError("");
     try {
+      const cloudName = process.env.NEXT_PUBLIC_CLD_CLOUD_NAME;
+      const uploadPreset = process.env.NEXT_PUBLIC_CLD_UPLOAD_PRESET;
+      if (!cloudName || !uploadPreset) throw new Error("Cloudinary 환경 변수가 설정되지 않았습니다.");
+
       const results = await Promise.all(
         toUpload.map(async (file) => {
           const fd = new FormData();
           fd.append("file", file);
-          const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+          fd.append("upload_preset", uploadPreset);
+          fd.append("folder", "supery");
+          const res = await fetch(
+            `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+            { method: "POST", body: fd }
+          );
           const data = await res.json();
-          if (!res.ok) throw new Error(data.error ?? res.status);
-          return { url: data.url, type: data.type } as MediaItem;
+          if (!res.ok) throw new Error(data.error?.message ?? "업로드 실패");
+          const type = data.resource_type === "video" ? "video" : "image";
+          return { url: data.secure_url, type } as MediaItem;
         })
       );
       setMediaItems((prev) => [...prev, ...results]);
