@@ -46,12 +46,15 @@ export default async function ProjectDetailPage({ params }: Props) {
 
       {/* Hero (대표 이미지) */}
       <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
-        <div className="w-full rounded-3xl overflow-hidden bg-[var(--bg-card)]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+        <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden bg-[var(--bg-card)]">
+          <Image
             src={project.image}
             alt={project.title}
-            className="w-full h-auto block"
+            fill
+            className="object-cover"
+            priority
+            unoptimized
+            sizes="(max-width: 1280px) 100vw, 1280px"
           />
         </div>
       </AnimatedSection>

@@ -194,9 +194,9 @@ export default function ProjectForm({ project }: Props) {
                 style={{ borderColor: i === coverIndex ? "#1A1A1A" : "#E0E0DC" }}>
 
                 {item.type === "video" ? (
-                  <video src={item.url} className="w-full h-full object-contain" muted />
+                  <video src={item.url} className="w-full h-full object-cover" muted />
                 ) : (
-                  <Image src={item.url} alt="" fill className="object-contain" unoptimized sizes="150px" />
+                  <Image src={item.url} alt="" fill className="object-cover" unoptimized sizes="150px" />
                 )}
 
                 {/* Video badge */}
