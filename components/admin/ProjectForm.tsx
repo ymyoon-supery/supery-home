@@ -120,10 +120,16 @@ export default function ProjectForm({ project }: Props) {
       ? `https://img.youtube.com/vi/${coverItem.videoId}/maxresdefault.jpg`
       : coverItem?.url ?? "";
 
+    // 대표 항목을 index 0으로 재정렬 (갤러리에서 slice(1)로 제외하기 위해)
+    const reorderedMedia = [
+      mediaItems[coverIndex],
+      ...mediaItems.filter((_, i) => i !== coverIndex),
+    ];
+
     const payload = {
       ...form,
       image: coverImageUrl,
-      media: mediaItems,
+      media: reorderedMedia,
     };
 
     const url = isEdit ? `/api/admin/projects/${project!.id}` : "/api/admin/projects";
