@@ -37,10 +37,13 @@ export default function ProjectForm({ project }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const parseYouTubeId = (url: string): string | null => {
-    const match = url.match(
-      /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&\n?#]+)/
-    );
-    return match?.[1] ?? null;
+    // youtu.be/ID 또는 youtube.com/shorts/ID
+    const shortMatch = url.match(/(?:youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/);
+    if (shortMatch) return shortMatch[1];
+    // youtube.com/watch?...v=ID... (파라미터 순서 무관)
+    const watchMatch = url.match(/youtube\.com\/watch.*[?&]v=([^&\n?#]+)/);
+    if (watchMatch) return watchMatch[1];
+    return null;
   };
 
   const handleAddYoutube = () => {
