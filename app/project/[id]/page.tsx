@@ -25,18 +25,22 @@ export default async function ProjectDetailPage({ params }: Props) {
   if (!project) notFound();
   const projects = await readProjectsAsync();
 
-  const mediaList = project.media?.length
+  const mediaList = (project.media?.length
     ? project.media
-    : [{ url: project.image, type: "image" as const }];
+    : [{ url: project.image, type: "image" as const }]
+  ).filter(Boolean);
 
-  // 대표 항목 식별 (project.image와 매칭)
-  const coverIndex = mediaList.findIndex((item) => {
+  // 대표 항목 식별: YouTube는 URL에서 videoId 추출 후 project.image와 비교
+  const coverIdx = mediaList.findIndex((item) => {
     if (item.type === "youtube") {
-      return `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg` === project.image;
+      const vid = item.videoId ??
+        item.url?.match(/(?:youtu\.be\/|shorts\/|[?&]v=)([^&\n?#]+)/)?.[1];
+      if (!vid) return false;
+      return project.image.includes(`/vi/${vid}/`);
     }
     return item.url === project.image;
   });
-  const effectiveCoverIndex = coverIndex >= 0 ? coverIndex : 0;
+  const effectiveCoverIndex = coverIdx >= 0 ? coverIdx : 0;
   const coverItem = mediaList[effectiveCoverIndex];
   const galleryItems = mediaList.filter((_, i) => i !== effectiveCoverIndex);
 
