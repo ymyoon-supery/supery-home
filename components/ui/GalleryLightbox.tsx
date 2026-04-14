@@ -4,20 +4,23 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import type { MediaItem } from "@/lib/projects";
 
 interface Props {
-  items: MediaItem[];        // 그리드에 표시할 항목 (대표 제외)
-  allItems: MediaItem[];     // 팝업 전체 탐색용 (대표 포함)
+  mediaList: MediaItem[];  // 전체 미디어 (대표 포함)
+  coverIndex: number;      // 그리드에서 숨길 대표 항목 인덱스
   projectTitle: string;
 }
 
-export default function GalleryLightbox({ items, allItems, projectTitle }: Props) {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null); // allItems 기준 index
+export default function GalleryLightbox({ mediaList, coverIndex, projectTitle }: Props) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
 
   const close = useCallback(() => setActiveIndex(null), []);
+
   const prev = useCallback(() =>
     setActiveIndex((i) => (i !== null && i > 0 ? i - 1 : i)), []);
+
   const next = useCallback(() =>
-    setActiveIndex((i) => (i !== null && i < allItems.length - 1 ? i + 1 : i)), [allItems.length]);
+    setActiveIndex((i) => (i !== null && i < mediaList.length - 1 ? i + 1 : i)),
+  [mediaList.length]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -44,65 +47,57 @@ export default function GalleryLightbox({ items, allItems, projectTitle }: Props
     };
   }, [activeIndex, close, prev, next]);
 
-  const activeItem = activeIndex !== null ? items[activeIndex] : null;
+  const activeItem = activeIndex !== null ? mediaList[activeIndex] : null;
 
   return (
     <>
-      {/* 썸네일 그리드 */}
+      {/* 썸네일 그리드 — 대표 항목 제외 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {items.map((item, i) => (
-          <div
-            key={i}
-            onClick={() => {
-              const idx = allItems.findIndex(
-                (x) => x.url === item.url && x.type === item.type && x.videoId === item.videoId
-              );
-              setActiveIndex(idx >= 0 ? idx : i);
-            }}
-            className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--bg-card)] cursor-pointer group"
-          >
-            {/* 썸네일 이미지 */}
-            {item.type === "youtube" ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={`https://img.youtube.com/vi/${item.videoId}/hqdefault.jpg`}
-                alt={`${projectTitle} ${i + 1}`}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            ) : item.type === "video" ? (
-              <video
-                src={item.url}
-                className="w-full h-full object-cover"
-                muted
-                playsInline
-              />
-            ) : (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={item.url}
-                alt={`${projectTitle} ${i + 1}`}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            )}
-
-            {/* 호버 오버레이 */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-              {(item.type === "youtube" || item.type === "video") ? (
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center opacity-90 ${item.type === "youtube" ? "bg-red-600" : "bg-black/70"}`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-5 h-5 ml-0.5">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
+        {mediaList.map((item, realIndex) => {
+          if (realIndex === coverIndex) return null;
+          return (
+            <div
+              key={realIndex}
+              onClick={() => setActiveIndex(realIndex)}
+              className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--bg-card)] cursor-pointer group"
+            >
+              {item.type === "youtube" ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={`https://img.youtube.com/vi/${item.videoId}/hqdefault.jpg`}
+                  alt={`${projectTitle} ${realIndex + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : item.type === "video" ? (
+                <video src={item.url} className="w-full h-full object-cover" muted playsInline />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-                  </svg>
-                </div>
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={item.url}
+                  alt={`${projectTitle} ${realIndex + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
               )}
+
+              {/* 호버 오버레이 */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                {(item.type === "youtube" || item.type === "video") ? (
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center opacity-90 ${item.type === "youtube" ? "bg-red-600" : "bg-black/70"}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-5 h-5 ml-0.5">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                    </svg>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* 라이트박스 */}
@@ -111,7 +106,7 @@ export default function GalleryLightbox({ items, allItems, projectTitle }: Props
           className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
           onClick={close}
         >
-          {/* 닫기 버튼 */}
+          {/* 닫기 */}
           <button
             onClick={close}
             className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
@@ -121,7 +116,7 @@ export default function GalleryLightbox({ items, allItems, projectTitle }: Props
             </svg>
           </button>
 
-          {/* 이전 버튼 */}
+          {/* 이전 */}
           {activeIndex > 0 && (
             <button
               onClick={(e) => { e.stopPropagation(); prev(); }}
@@ -133,8 +128,8 @@ export default function GalleryLightbox({ items, allItems, projectTitle }: Props
             </button>
           )}
 
-          {/* 다음 버튼 */}
-          {activeIndex < allItems.length - 1 && (
+          {/* 다음 */}
+          {activeIndex < mediaList.length - 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); next(); }}
               className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
@@ -181,9 +176,9 @@ export default function GalleryLightbox({ items, allItems, projectTitle }: Props
           </div>
 
           {/* 인디케이터 */}
-          {allItems.length > 1 && (
+          {mediaList.length > 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-              {allItems.map((_, i) => (
+              {mediaList.map((_, i) => (
                 <button
                   key={i}
                   onClick={(e) => { e.stopPropagation(); setActiveIndex(i); }}

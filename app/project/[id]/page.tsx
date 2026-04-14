@@ -104,7 +104,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         </AnimatedSection>
 
         {/* Media gallery */}
-        {galleryItems.length > 0 && (
+        {mediaList.length > 1 && (
           <>
             <div className="h-px bg-[var(--border)] my-12" />
             <AnimatedSection>
@@ -112,8 +112,8 @@ export default async function ProjectDetailPage({ params }: Props) {
                 Gallery
               </h2>
               <GalleryLightbox
-                items={galleryItems}
-                allItems={mediaList}
+                mediaList={mediaList}
+                coverIndex={effectiveCoverIndex}
                 projectTitle={project.title}
               />
             </AnimatedSection>
