@@ -60,31 +60,14 @@ export default async function ProjectDetailPage({ params }: Props) {
         </Link>
       </div>
 
-      {/* Hero (대표 이미지 or 유튜브 임베드) */}
+      {/* Hero + Gallery + Lightbox */}
       <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
-        {coverItem?.type === "youtube" ? (
-          <div className="w-full aspect-video rounded-3xl overflow-hidden bg-[var(--bg-card)]">
-            <iframe
-              src={`https://www.youtube.com/embed/${coverItem.videoId}`}
-              title={project.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full"
-            />
-          </div>
-        ) : (
-          <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden bg-[var(--bg-card)]">
-            <Image
-              src={project.image}
-              alt={project.title}
-              fill
-              className="object-cover"
-              priority
-              unoptimized
-              sizes="(max-width: 1280px) 100vw, 1280px"
-            />
-          </div>
-        )}
+        <GalleryLightbox
+          mediaList={mediaList}
+          coverIndex={effectiveCoverIndex}
+          projectTitle={project.title}
+          projectImage={project.image}
+        />
       </AnimatedSection>
 
       {/* Content */}
@@ -103,22 +86,7 @@ export default async function ProjectDetailPage({ params }: Props) {
           )}
         </AnimatedSection>
 
-        {/* Media gallery */}
-        {mediaList.length > 1 && (
-          <>
-            <div className="h-px bg-[var(--border)] my-12" />
-            <AnimatedSection>
-              <h2 className="text-sm font-semibold tracking-[0.2em] text-[var(--text-caption)] uppercase mb-6">
-                Gallery
-              </h2>
-              <GalleryLightbox
-                mediaList={mediaList}
-                coverIndex={effectiveCoverIndex}
-                projectTitle={project.title}
-              />
-            </AnimatedSection>
-          </>
-        )}
+        {/* Media gallery — GalleryLightbox 내부에 포함됨 */}
 
         {/* Divider */}
         <div className="h-px bg-[var(--border)] my-12" />

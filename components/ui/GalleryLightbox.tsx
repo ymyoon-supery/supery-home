@@ -5,11 +5,12 @@ import type { MediaItem } from "@/lib/projects";
 
 interface Props {
   mediaList: MediaItem[];  // 전체 미디어 (대표 포함)
-  coverIndex: number;      // 그리드에서 숨길 대표 항목 인덱스
+  coverIndex: number;      // 대표 항목 인덱스
   projectTitle: string;
+  projectImage: string;    // 대표 이미지 URL (히어로 표시용)
 }
 
-export default function GalleryLightbox({ mediaList, coverIndex, projectTitle }: Props) {
+export default function GalleryLightbox({ mediaList, coverIndex, projectTitle, projectImage }: Props) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
 
@@ -49,9 +50,58 @@ export default function GalleryLightbox({ mediaList, coverIndex, projectTitle }:
 
   const activeItem = activeIndex !== null ? mediaList[activeIndex] : null;
 
+  const coverItem = mediaList[coverIndex];
+
   return (
     <>
+      {/* 히어로 — 클릭 시 라이트박스 */}
+      <div
+        onClick={() => setActiveIndex(coverIndex)}
+        className="cursor-pointer"
+      >
+        {coverItem?.type === "youtube" ? (
+          <div className="w-full aspect-video rounded-3xl overflow-hidden bg-[var(--bg-card)] relative group">
+            <img
+              src={`https://img.youtube.com/vi/${coverItem.videoId}/maxresdefault.jpg`}
+              alt={projectTitle}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+              <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-7 h-7 ml-1">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden bg-[var(--bg-card)] group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={projectImage}
+              alt={projectTitle}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* 썸네일 그리드 — 대표 항목 제외 */}
+      {mediaList.length > 1 && (
+        <div className="mt-12">
+          <div className="h-px bg-[var(--border)] mb-12" />
+          <h2 className="text-sm font-semibold tracking-[0.2em] text-[var(--text-caption)] uppercase mb-6">
+            Gallery
+          </h2>
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {mediaList.map((item, realIndex) => {
           if (realIndex === coverIndex) return null;
