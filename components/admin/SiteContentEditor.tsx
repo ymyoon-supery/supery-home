@@ -1,7 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { SiteContent, ServiceItem, StatItem, ServiceCardItem } from "@/lib/siteContent";
+
+async function uploadToCloudinary(file: File): Promise<string> {
+  const cloudName = process.env.NEXT_PUBLIC_CLD_CLOUD_NAME;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLD_UPLOAD_PRESET;
+  if (!cloudName || !uploadPreset) throw new Error("Cloudinary 환경변수가 설정되지 않았습니다.");
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", uploadPreset);
+  fd.append("folder", "brochure");
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+    method: "POST",
+    body: fd,
+  });
+  if (!res.ok) throw new Error("업로드 실패");
+  const data = await res.json();
+  return data.secure_url as string;
+}
 
 type Tab = "services" | "about" | "contact" | "footer";
 
@@ -65,6 +82,23 @@ export default function SiteContentEditor({ initial }: Props) {
   const [content, setContent] = useState<SiteContent>(initial);
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState<Tab | null>(null);
+  const [pdfUploading, setPdfUploading] = useState(false);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPdfUploading(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      updateServices({ downloadUrl: url });
+    } catch {
+      alert("파일 업로드에 실패했습니다.");
+    } finally {
+      setPdfUploading(false);
+      if (pdfInputRef.current) pdfInputRef.current.value = "";
+    }
+  };
 
   const save = async (section: Tab) => {
     setLoading(true);
@@ -134,12 +168,40 @@ export default function SiteContentEditor({ initial }: Props) {
               onChange={(v) => updateServices({ body: v })}
               multiline
             />
-            <Field
-              label="회사소개서 다운로드 URL"
-              value={content.services.downloadUrl}
-              onChange={(v) => updateServices({ downloadUrl: v })}
-              placeholder="#"
-            />
+            <div>
+              <label className="block text-xs font-semibold text-[#777] uppercase tracking-widest mb-1.5">
+                회사소개서 다운로드
+              </label>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={content.services.downloadUrl}
+                  onChange={(e) => updateServices({ downloadUrl: e.target.value })}
+                  placeholder="#"
+                  className="flex-1 px-3 py-2.5 border border-[#E0E0DC] rounded-xl text-sm text-[#1A1A1A] bg-white focus:outline-none focus:border-[#1A1A1A] transition-colors"
+                />
+                <input
+                  ref={pdfInputRef}
+                  type="file"
+                  accept=".pdf,.ppt,.pptx,.doc,.docx"
+                  onChange={handlePdfUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => pdfInputRef.current?.click()}
+                  disabled={pdfUploading}
+                  className="shrink-0 px-4 py-2.5 bg-[#F5F5F3] border border-[#E0E0DC] text-xs font-semibold text-[#555] rounded-xl hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-colors disabled:opacity-50 whitespace-nowrap"
+                >
+                  {pdfUploading ? "업로드 중..." : "파일 업로드"}
+                </button>
+              </div>
+              {content.services.downloadUrl && content.services.downloadUrl !== "#" && (
+                <p className="mt-1.5 text-xs text-[#AAA] truncate">
+                  현재: <a href={content.services.downloadUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1A1A1A]">{content.services.downloadUrl}</a>
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-[#E0E0DC] p-6">
