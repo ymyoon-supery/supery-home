@@ -3,21 +3,48 @@
 import { useState, useRef } from "react";
 import type { SiteContent, ServiceItem, StatItem, ServiceCardItem } from "@/lib/siteContent";
 
-async function uploadToCloudinary(file: File): Promise<string> {
+async function uploadToCloudinary(file: File, onProgress?: (pct: number) => void): Promise<string> {
   const cloudName = process.env.NEXT_PUBLIC_CLD_CLOUD_NAME;
   const uploadPreset = process.env.NEXT_PUBLIC_CLD_UPLOAD_PRESET;
   if (!cloudName || !uploadPreset) throw new Error("Cloudinary 환경변수가 설정되지 않았습니다.");
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("upload_preset", uploadPreset);
-  fd.append("folder", "brochure");
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
-    method: "POST",
-    body: fd,
-  });
-  if (!res.ok) throw new Error("업로드 실패");
-  const data = await res.json();
-  return data.secure_url as string;
+
+  const CHUNK = 6 * 1024 * 1024; // 6MB
+  const total = file.size;
+  const uniqueId = crypto.randomUUID().replace(/-/g, "");
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+  let offset = 0;
+  let secureUrl = "";
+
+  while (offset < total) {
+    const end = Math.min(offset + CHUNK, total);
+    const chunk = file.slice(offset, end);
+    const fd = new FormData();
+    fd.append("file", chunk, file.name);
+    fd.append("upload_preset", uploadPreset);
+    fd.append("folder", "brochure");
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "X-Unique-Upload-Id": uniqueId,
+        "Content-Range": `bytes ${offset}-${end - 1}/${total}`,
+      },
+      body: fd,
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`업로드 실패: ${err}`);
+    }
+
+    const data = await res.json();
+    if (data.secure_url) secureUrl = data.secure_url;
+
+    offset = end;
+    onProgress?.(Math.round((offset / total) * 100));
+  }
+
+  return secureUrl;
 }
 
 type Tab = "services" | "about" | "contact" | "footer";
@@ -83,19 +110,22 @@ export default function SiteContentEditor({ initial }: Props) {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState<Tab | null>(null);
   const [pdfUploading, setPdfUploading] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState(0);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setPdfUploading(true);
+    setPdfProgress(0);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, setPdfProgress);
       updateServices({ downloadUrl: url });
-    } catch {
-      alert("파일 업로드에 실패했습니다.");
+    } catch (err) {
+      alert(`파일 업로드에 실패했습니다.\n${err instanceof Error ? err.message : ""}`);
     } finally {
       setPdfUploading(false);
+      setPdfProgress(0);
       if (pdfInputRef.current) pdfInputRef.current.value = "";
     }
   };
@@ -193,7 +223,7 @@ export default function SiteContentEditor({ initial }: Props) {
                   disabled={pdfUploading}
                   className="shrink-0 px-4 py-2.5 bg-[#F5F5F3] border border-[#E0E0DC] text-xs font-semibold text-[#555] rounded-xl hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-colors disabled:opacity-50 whitespace-nowrap"
                 >
-                  {pdfUploading ? "업로드 중..." : "파일 업로드"}
+                  {pdfUploading ? `${pdfProgress}%` : "파일 업로드"}
                 </button>
               </div>
               {content.services.downloadUrl && content.services.downloadUrl !== "#" && (
