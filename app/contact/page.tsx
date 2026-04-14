@@ -3,7 +3,7 @@ import ContactForm from "@/components/ui/ContactForm";
 import { readSiteContentAsync } from "@/lib/siteData";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Contact",

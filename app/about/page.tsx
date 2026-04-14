@@ -3,7 +3,7 @@ import CountUp from "@/components/ui/CountUp";
 import { readSiteContentAsync } from "@/lib/siteData";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "About Us",
