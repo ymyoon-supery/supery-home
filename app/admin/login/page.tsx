@@ -21,7 +21,7 @@ export default function AdminLoginPage() {
     });
     setLoading(false);
     if (res.ok) {
-      router.push("/admin/projects");
+      router.push("/admin");
     } else {
       setError("비밀번호가 올바르지 않습니다.");
     }
