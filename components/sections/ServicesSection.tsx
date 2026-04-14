@@ -8,6 +8,13 @@ interface Props {
 
 export default function ServicesSection({ content }: Props) {
   const titleLines = content.title.split("\n");
+  const s = content.titleSize ?? "md";
+  const titleSize =
+    s === "sm" ? "text-3xl md:text-4xl lg:text-5xl" :
+    s === "lg" ? "text-5xl md:text-6xl lg:text-7xl" :
+                 "text-4xl md:text-5xl lg:text-6xl";
+  const b = content.bodySize ?? "md";
+  const bodySize = b === "sm" ? "text-sm" : b === "lg" ? "text-lg" : "text-base";
 
   return (
     <section className="section-padding bg-[var(--bg-main)]">
@@ -19,7 +26,7 @@ export default function ServicesSection({ content }: Props) {
               <p className="text-xs font-semibold tracking-[0.3em] text-[var(--text-caption)] uppercase mb-6">
                 Services
               </p>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--text-heading)] leading-tight mb-6">
+              <h2 className={`${titleSize} font-bold text-[var(--text-heading)] leading-tight mb-6`}>
                 {titleLines.map((line, i) => (
                   <span key={i}>
                     {line}
@@ -27,7 +34,7 @@ export default function ServicesSection({ content }: Props) {
                   </span>
                 ))}
               </h2>
-              <p className="text-[var(--text-body)] leading-relaxed mb-10 max-w-md">
+              <p className={`${bodySize} text-[var(--text-body)] leading-relaxed mb-10 max-w-md`}>
                 {content.body}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">

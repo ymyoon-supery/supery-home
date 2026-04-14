@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import type { SiteContent, ServiceItem, StatItem, ServiceCardItem } from "@/lib/siteContent";
+import type { SiteContent, ServiceItem, StatItem, ServiceCardItem, FontSize } from "@/lib/siteContent";
 
 async function uploadToCloudinary(file: File, onProgress?: (pct: number) => void): Promise<string> {
   const cloudName = process.env.NEXT_PUBLIC_CLD_CLOUD_NAME;
@@ -88,6 +88,45 @@ function Field({
           className="w-full px-3 py-2.5 border border-[#E0E0DC] rounded-xl text-sm text-[#1A1A1A] bg-white focus:outline-none focus:border-[#1A1A1A] transition-colors"
         />
       )}
+    </div>
+  );
+}
+
+function FontSizePicker({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: FontSize;
+  onChange: (v: FontSize) => void;
+}) {
+  const sizes: { key: FontSize; text: string }[] = [
+    { key: "sm", text: "S" },
+    { key: "md", text: "M" },
+    { key: "lg", text: "L" },
+  ];
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-[#777] uppercase tracking-widest mb-1.5">
+        {label}
+      </label>
+      <div className="flex gap-1">
+        {sizes.map(({ key, text }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onChange(key)}
+            className={`w-10 h-9 rounded-lg text-sm font-bold border transition-colors ${
+              value === key
+                ? "bg-[#1A1A1A] text-white border-[#1A1A1A]"
+                : "bg-white text-[#777] border-[#E0E0DC] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+            }`}
+          >
+            {text}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -186,18 +225,32 @@ export default function SiteContentEditor({ initial }: Props) {
         <div className="space-y-8">
           <div className="bg-white rounded-2xl border border-[#E0E0DC] p-6 space-y-5">
             <h2 className="font-bold text-[#1A1A1A]">텍스트</h2>
-            <Field
-              label="제목 (줄바꿈은 \n으로)"
-              value={content.services.title}
-              onChange={(v) => updateServices({ title: v })}
-              multiline
-            />
-            <Field
-              label="본문"
-              value={content.services.body}
-              onChange={(v) => updateServices({ body: v })}
-              multiline
-            />
+            <div className="space-y-2">
+              <Field
+                label="제목 (줄바꿈은 \n으로)"
+                value={content.services.title}
+                onChange={(v) => updateServices({ title: v })}
+                multiline
+              />
+              <FontSizePicker
+                label="제목 크기"
+                value={content.services.titleSize ?? "md"}
+                onChange={(v) => updateServices({ titleSize: v })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Field
+                label="본문"
+                value={content.services.body}
+                onChange={(v) => updateServices({ body: v })}
+                multiline
+              />
+              <FontSizePicker
+                label="본문 크기"
+                value={content.services.bodySize ?? "md"}
+                onChange={(v) => updateServices({ bodySize: v })}
+              />
+            </div>
             <div>
               <label className="block text-xs font-semibold text-[#777] uppercase tracking-widest mb-1.5">
                 회사소개서 다운로드
@@ -306,6 +359,11 @@ export default function SiteContentEditor({ initial }: Props) {
               <Field label="두 번째 줄" value={content.about.heroLine2} onChange={(v) => updateAbout({ heroLine2: v })} />
               <Field label="세 번째 줄" value={content.about.heroLine3} onChange={(v) => updateAbout({ heroLine3: v })} />
             </div>
+            <FontSizePicker
+              label="히어로 텍스트 크기"
+              value={content.about.heroSize ?? "md"}
+              onChange={(v) => updateAbout({ heroSize: v })}
+            />
           </div>
 
           <div className="bg-white rounded-2xl border border-[#E0E0DC] p-6 space-y-5">
@@ -313,6 +371,11 @@ export default function SiteContentEditor({ initial }: Props) {
             <Field label="한국어 단락 1" value={content.about.bodyKo} onChange={(v) => updateAbout({ bodyKo: v })} multiline />
             <Field label="한국어 단락 2" value={content.about.bodyKo2} onChange={(v) => updateAbout({ bodyKo2: v })} multiline />
             <Field label="영문 단락" value={content.about.bodyEn} onChange={(v) => updateAbout({ bodyEn: v })} multiline />
+            <FontSizePicker
+              label="본문 크기"
+              value={content.about.bodySize ?? "md"}
+              onChange={(v) => updateAbout({ bodySize: v })}
+            />
           </div>
 
           <div className="bg-white rounded-2xl border border-[#E0E0DC] p-6">

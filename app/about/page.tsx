@@ -13,6 +13,16 @@ export const metadata: Metadata = {
 export default async function AboutPage() {
   const siteContent = await readSiteContentAsync();
   const { about } = siteContent;
+  const h = about.heroSize ?? "md";
+  const heroSize =
+    h === "sm" ? "text-3xl md:text-5xl lg:text-6xl" :
+    h === "lg" ? "text-5xl md:text-7xl lg:text-8xl" :
+                 "text-4xl md:text-6xl lg:text-7xl";
+  const bo = about.bodySize ?? "md";
+  const bodySize =
+    bo === "sm" ? "text-sm md:text-base" :
+    bo === "lg" ? "text-lg md:text-xl" :
+                  "text-base md:text-lg";
 
   return (
     <div className="pt-16 min-h-screen bg-[var(--bg-main)]">
@@ -23,7 +33,7 @@ export default async function AboutPage() {
             <p className="text-xs font-semibold tracking-[0.3em] text-white/40 uppercase mb-6">
               Who We Are
             </p>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight mb-8">
+            <h1 className={`${heroSize} font-bold text-white leading-tight tracking-tight mb-8`}>
               {about.heroLine1}<br />
               <span className="text-white/50">{about.heroLine2}</span><br />
               {about.heroLine3}
@@ -37,11 +47,11 @@ export default async function AboutPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
             <AnimatedSection>
-              <p className="text-[var(--text-body)] leading-[2] text-base md:text-lg">
+              <p className={`${bodySize} text-[var(--text-body)] leading-[2]`}>
                 {about.bodyKo}
               </p>
               {about.bodyKo2 && (
-                <p className="text-[var(--text-body)] leading-[2] text-base md:text-lg mt-6">
+                <p className={`${bodySize} text-[var(--text-body)] leading-[2] mt-6`}>
                   {about.bodyKo2}
                 </p>
               )}

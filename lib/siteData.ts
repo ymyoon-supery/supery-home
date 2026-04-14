@@ -75,19 +75,30 @@ async function writeToJsonBin(content: SiteContent): Promise<boolean> {
   }
 }
 
+// 저장된 데이터에 새 필드가 없을 때 기본값으로 채워주는 딥 머지
+function mergeWithDefaults(saved: Partial<SiteContent>): SiteContent {
+  return {
+    services: { ...defaultSiteContent.services, ...saved.services },
+    about: { ...defaultSiteContent.about, ...saved.about },
+    contact: { ...defaultSiteContent.contact, ...saved.contact },
+    footer: { ...defaultSiteContent.footer, ...saved.footer },
+  };
+}
+
 // ─── Public API ────────────────────────────────────────────────────────────
 export async function readSiteContentAsync(): Promise<SiteContent> {
   // 1. Try JSONBin (persistent, survives deployments)
   if (JSONBIN_API_KEY && JSONBIN_SITE_BIN_ID) {
     const remote = await readFromJsonBin();
     if (remote) {
-      writeLocalSiteContent(remote); // cache locally
-      return remote;
+      const merged = mergeWithDefaults(remote);
+      writeLocalSiteContent(merged); // cache locally
+      return merged;
     }
   }
   // 2. Fallback to local file
   const local = readLocalSiteContent();
-  return local ?? defaultSiteContent;
+  return local ? mergeWithDefaults(local) : defaultSiteContent;
 }
 
 export async function writeSiteContentAsync(content: SiteContent): Promise<void> {
