@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json();
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
 
   if (!adminPassword || password !== adminPassword) {
     return NextResponse.json({ error: "비밀번호가 올바르지 않습니다." }, { status: 401 });

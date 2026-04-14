@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "SUPER Y Admin" };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 bg-[#F5F5F3] overflow-auto flex flex-col">
+    <div className="min-h-screen bg-[#F5F5F3] flex flex-col">
       <AdminHeader />
       <div className="flex-1">
         {children}

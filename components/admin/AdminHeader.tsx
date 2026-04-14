@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import AdminLogout from "@/components/admin/AdminLogout";
 
 export default function AdminHeader() {
+  const pathname = usePathname();
+  if (pathname === "/admin/login") return null;
+
   return (
     <header className="bg-white border-b border-[#E0E0DC] sticky top-0 z-10">
       <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">

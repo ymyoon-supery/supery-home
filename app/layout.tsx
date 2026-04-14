@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ThemeProvider from "@/components/ui/ThemeProvider";
+import ConditionalShell from "@/components/layout/ConditionalShell";
 
 const notoSansKR = Noto_Sans_KR({
   subsets: ["latin"],
@@ -66,9 +67,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col antialiased bg-[var(--bg-main)] text-[var(--text-heading)]">
         <ThemeProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <ConditionalShell header={<Header />} footer={<Footer />}>
+            {children}
+          </ConditionalShell>
         </ThemeProvider>
       </body>
     </html>
