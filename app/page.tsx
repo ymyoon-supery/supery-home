@@ -3,6 +3,7 @@ import HeroSlider from "@/components/sections/HeroSlider";
 import ServicesSection from "@/components/sections/ServicesSection";
 import PortfolioPreview from "@/components/sections/PortfolioPreview";
 import { getFeaturedProjectsFromData, readProjectsAsync } from "@/lib/data";
+import { readSiteContentAsync } from "@/lib/siteData";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,7 +15,10 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   try {
-    const featured = await getFeaturedProjectsFromData();
+    const [featured, siteContent] = await Promise.all([
+      getFeaturedProjectsFromData(),
+      readSiteContentAsync(),
+    ]);
     const allProjects = featured.length > 0 ? featured : await readProjectsAsync();
     const slides = allProjects.slice(0, 5);
 
@@ -22,7 +26,7 @@ export default async function HomePage() {
       <>
         <GradientHero />
         <HeroSlider slides={slides} />
-        <ServicesSection />
+        <ServicesSection content={siteContent.services} />
         <PortfolioPreview projects={allProjects.slice(0, 6)} />
       </>
     );

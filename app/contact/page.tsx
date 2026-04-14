@@ -1,13 +1,20 @@
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import ContactForm from "@/components/ui/ContactForm";
+import { readSiteContentAsync } from "@/lib/siteData";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Contact",
   description: "SUPER Y에 문의하세요. 마케팅 전략부터 캠페인, 브랜딩까지 함께 만들어 갑니다.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const siteContent = await readSiteContentAsync();
+  const { contact } = siteContent;
+  const addressLines = contact.address.split("\n");
+
   return (
     <div className="pt-16 min-h-screen bg-[var(--bg-main)]">
       {/* Hero */}
@@ -21,7 +28,7 @@ export default function ContactPage() {
               CONTACT
             </h1>
             <p className="text-[var(--text-body)] max-w-lg leading-relaxed">
-              브랜드의 성장을 함께 만들어갈 준비가 되어 있습니다. 언제든지 연락주세요.
+              {contact.heroSubtitle}
             </p>
           </AnimatedSection>
         </div>
@@ -44,10 +51,12 @@ export default function ContactPage() {
                     Office
                   </h3>
                   <address className="not-italic text-[var(--text-body)] text-sm leading-loose">
-                    Jobok Building 102, 201<br />
-                    23, Nonhyeon-ro 135-gil<br />
-                    Gangnam-gu, Seoul<br />
-                    Republic of Korea
+                    {addressLines.map((line, i) => (
+                      <span key={i}>
+                        {line}
+                        {i < addressLines.length - 1 && <br />}
+                      </span>
+                    ))}
                   </address>
                 </div>
 
@@ -59,17 +68,17 @@ export default function ContactPage() {
                   <div className="space-y-2 text-sm text-[var(--text-body)]">
                     <p>
                       <span className="text-[var(--text-caption)]">Tel.</span>{" "}
-                      <a href="tel:02-540-3445" className="hover:text-[var(--text-heading)] transition-colors">
-                        02-540-3445
+                      <a href={`tel:${contact.tel}`} className="hover:text-[var(--text-heading)] transition-colors">
+                        {contact.tel}
                       </a>
                     </p>
                     <p>
-                      <span className="text-[var(--text-caption)]">Fax.</span> 02-540-3443
+                      <span className="text-[var(--text-caption)]">Fax.</span> {contact.fax}
                     </p>
                     <p>
                       <span className="text-[var(--text-caption)]">Web.</span>{" "}
-                      <a href="http://www.supery.co.kr" className="hover:text-[var(--text-heading)] transition-colors">
-                        www.supery.co.kr
+                      <a href={`http://${contact.web}`} className="hover:text-[var(--text-heading)] transition-colors">
+                        {contact.web}
                       </a>
                     </p>
                   </div>

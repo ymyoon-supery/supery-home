@@ -24,6 +24,14 @@ export default async function AdminProjectsPage() {
               unoptimized
             />
             <span className="text-xs font-semibold tracking-widest text-[#AAA] uppercase">Admin</span>
+            <nav className="flex items-center gap-4 ml-4">
+              <Link href="/admin/projects" className="text-xs font-semibold text-[#1A1A1A] border-b border-[#1A1A1A]">
+                프로젝트
+              </Link>
+              <Link href="/admin/site" className="text-xs text-[#777] hover:text-[#1A1A1A] transition-colors">
+                사이트 콘텐츠
+              </Link>
+            </nav>
           </div>
           <div className="flex items-center gap-4">
             <Link

@@ -1,7 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import { readSiteContentAsync } from "@/lib/siteData";
 
-export default function Footer() {
+export default async function Footer() {
+  const siteContent = await readSiteContentAsync();
+  const { footer } = siteContent;
+  const taglineLines = footer.tagline.split("\n");
+  const addressLines = footer.address.split("\n");
+
   return (
     <footer className="bg-[var(--bg-inverse)] text-[var(--text-on-inverse)]">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
@@ -17,8 +23,12 @@ export default function Footer() {
               unoptimized
             />
             <p className="text-sm text-white/60 leading-relaxed max-w-xs">
-              끊임없이 변화하는 멀티채널 환경에서<br />
-              브랜드의 가치를 극대화합니다.
+              {taglineLines.map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i < taglineLines.length - 1 && <br />}
+                </span>
+              ))}
             </p>
           </div>
 
@@ -26,10 +36,17 @@ export default function Footer() {
           <div className="space-y-3">
             <h3 className="text-xs font-semibold tracking-widest text-white/40 uppercase">Contact</h3>
             <address className="not-italic space-y-2 text-sm text-white/70">
-              <p>Jobok Building 102, 201, 23, Nonhyeon-ro 135-gil,<br />Gangnam-gu, Seoul, Republic of Korea</p>
-              <p>Tel. 02-540-3445 | Fax. 02-540-3443</p>
-              <a href="http://www.supery.co.kr" className="hover:text-white transition-colors">
-                www.supery.co.kr
+              <p>
+                {addressLines.map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    {i < addressLines.length - 1 && <br />}
+                  </span>
+                ))}
+              </p>
+              <p>Tel. {footer.tel} | Fax. {footer.fax}</p>
+              <a href={`http://${footer.web}`} className="hover:text-white transition-colors">
+                {footer.web}
               </a>
             </address>
           </div>
