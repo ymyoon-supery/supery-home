@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { MediaItem } from "@/lib/projects";
 
 interface Props {
@@ -10,12 +10,23 @@ interface Props {
 
 export default function GalleryLightbox({ items, projectTitle }: Props) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
 
   const close = useCallback(() => setActiveIndex(null), []);
   const prev = useCallback(() =>
     setActiveIndex((i) => (i !== null && i > 0 ? i - 1 : i)), []);
   const next = useCallback(() =>
     setActiveIndex((i) => (i !== null && i < items.length - 1 ? i + 1 : i)), [items.length]);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) diff > 0 ? next() : prev();
+    touchStartX.current = null;
+  };
 
   useEffect(() => {
     if (activeIndex === null) return;
@@ -132,6 +143,8 @@ export default function GalleryLightbox({ items, projectTitle }: Props) {
           <div
             className="relative max-w-5xl w-full flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
           >
             {activeItem.type === "youtube" ? (
               <div className="w-full aspect-video">
