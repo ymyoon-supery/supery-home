@@ -53,7 +53,12 @@ export default function GalleryLightbox({ items, allItems, projectTitle }: Props
         {items.map((item, i) => (
           <div
             key={i}
-            onClick={() => setActiveIndex(allItems.indexOf(item))}
+            onClick={() => {
+              const idx = allItems.findIndex(
+                (x) => x.url === item.url && x.type === item.type && x.videoId === item.videoId
+              );
+              setActiveIndex(idx >= 0 ? idx : i);
+            }}
             className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--bg-card)] cursor-pointer group"
           >
             {/* 썸네일 이미지 */}
