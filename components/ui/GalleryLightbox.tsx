@@ -3,6 +3,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { MediaItem } from "@/lib/projects";
 
+// Cloudinary URL에 변환 파라미터 삽입 (비-Cloudinary URL은 그대로)
+function cldUrl(url: string, transform: string): string {
+  if (!url?.includes("res.cloudinary.com")) return url;
+  return url.replace("/upload/", `/upload/${transform}/`);
+}
+
 interface Props {
   mediaList: MediaItem[];  // 전체 미디어 (대표 포함)
   coverIndex: number;      // 대표 항목 인덱스
@@ -78,7 +84,7 @@ export default function GalleryLightbox({ mediaList, coverIndex, projectTitle, p
           <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden bg-[var(--bg-card)] group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={projectImage}
+              src={cldUrl(projectImage, "w_1200,q_auto,f_auto")}
               alt={projectTitle}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             />
@@ -123,9 +129,10 @@ export default function GalleryLightbox({ mediaList, coverIndex, projectTitle, p
               ) : (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
-                  src={item.url}
+                  src={cldUrl(item.url, "w_800,q_auto,f_auto")}
                   alt={`${projectTitle} ${realIndex + 1}`}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
                 />
               )}
 
@@ -218,7 +225,7 @@ export default function GalleryLightbox({ mediaList, coverIndex, projectTitle, p
             ) : (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
-                src={activeItem.url}
+                src={cldUrl(activeItem.url, "w_1920,q_auto,f_auto")}
                 alt={`${projectTitle} ${activeIndex + 1}`}
                 className="max-h-[85vh] max-w-full w-auto object-contain rounded-2xl"
               />

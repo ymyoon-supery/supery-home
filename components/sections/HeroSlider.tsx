@@ -75,7 +75,6 @@ export default function HeroSlider({ slides }: Props) {
             className="object-cover"
             priority={current === 0}
             sizes="100vw"
-            unoptimized
           />
           {/* Dark overlay */}
           <div className="absolute inset-0 bg-black/50" />

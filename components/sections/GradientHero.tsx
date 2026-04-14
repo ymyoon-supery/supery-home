@@ -108,7 +108,6 @@ export default function GradientHero() {
             width={480}
             height={120}
             className="mx-auto w-44 md:w-[268px] lg:w-[336px] h-auto object-contain"
-            unoptimized
             priority
           />
         </motion.div>

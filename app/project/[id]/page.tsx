@@ -111,7 +111,6 @@ export default async function ProjectDetailPage({ params }: Props) {
                     alt={related.title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    unoptimized
                     sizes="(max-width: 640px) 100vw, 50vw"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300" />
