@@ -103,15 +103,19 @@ export default async function ProjectDetailPage({ params }: Props) {
           )}
         </AnimatedSection>
 
-        {/* Media gallery (전체 미디어) */}
-        {mediaList.length > 0 && (
+        {/* Media gallery */}
+        {galleryItems.length > 0 && (
           <>
             <div className="h-px bg-[var(--border)] my-12" />
             <AnimatedSection>
               <h2 className="text-sm font-semibold tracking-[0.2em] text-[var(--text-caption)] uppercase mb-6">
                 Gallery
               </h2>
-              <GalleryLightbox items={mediaList} projectTitle={project.title} />
+              <GalleryLightbox
+                items={galleryItems}
+                allItems={mediaList}
+                projectTitle={project.title}
+              />
             </AnimatedSection>
           </>
         )}

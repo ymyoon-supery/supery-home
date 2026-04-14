@@ -4,19 +4,20 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import type { MediaItem } from "@/lib/projects";
 
 interface Props {
-  items: MediaItem[];
+  items: MediaItem[];        // 그리드에 표시할 항목 (대표 제외)
+  allItems: MediaItem[];     // 팝업 전체 탐색용 (대표 포함)
   projectTitle: string;
 }
 
-export default function GalleryLightbox({ items, projectTitle }: Props) {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+export default function GalleryLightbox({ items, allItems, projectTitle }: Props) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null); // allItems 기준 index
   const touchStartX = useRef<number | null>(null);
 
   const close = useCallback(() => setActiveIndex(null), []);
   const prev = useCallback(() =>
     setActiveIndex((i) => (i !== null && i > 0 ? i - 1 : i)), []);
   const next = useCallback(() =>
-    setActiveIndex((i) => (i !== null && i < items.length - 1 ? i + 1 : i)), [items.length]);
+    setActiveIndex((i) => (i !== null && i < allItems.length - 1 ? i + 1 : i)), [allItems.length]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -52,7 +53,7 @@ export default function GalleryLightbox({ items, projectTitle }: Props) {
         {items.map((item, i) => (
           <div
             key={i}
-            onClick={() => setActiveIndex(i)}
+            onClick={() => setActiveIndex(allItems.indexOf(item))}
             className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--bg-card)] cursor-pointer group"
           >
             {/* 썸네일 이미지 */}
@@ -128,7 +129,7 @@ export default function GalleryLightbox({ items, projectTitle }: Props) {
           )}
 
           {/* 다음 버튼 */}
-          {activeIndex < items.length - 1 && (
+          {activeIndex < allItems.length - 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); next(); }}
               className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
@@ -175,9 +176,9 @@ export default function GalleryLightbox({ items, projectTitle }: Props) {
           </div>
 
           {/* 인디케이터 */}
-          {items.length > 1 && (
+          {allItems.length > 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-              {items.map((_, i) => (
+              {allItems.map((_, i) => (
                 <button
                   key={i}
                   onClick={(e) => { e.stopPropagation(); setActiveIndex(i); }}
