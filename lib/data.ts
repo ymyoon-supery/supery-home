@@ -57,8 +57,8 @@ async function readFromBlob(): Promise<Project[] | null> {
   }
 }
 
-async function writeToBlob(projects: Project[]): Promise<boolean> {
-  if (!BLOB_TOKEN) return false;
+async function writeToBlob(projects: Project[]): Promise<{ ok: boolean; error?: string }> {
+  if (!BLOB_TOKEN) return { ok: false, error: "BLOB_READ_WRITE_TOKEN 환경변수 없음" };
   try {
     await put(BLOB_PATHNAME, JSON.stringify(projects), {
       access: "public",
@@ -66,9 +66,9 @@ async function writeToBlob(projects: Project[]): Promise<boolean> {
       contentType: "application/json",
       token: BLOB_TOKEN,
     });
-    return true;
-  } catch {
-    return false;
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
   }
 }
 
@@ -119,10 +119,8 @@ export async function readProjectsAsync(): Promise<Project[]> {
 
 export async function writeProjectsAsync(projects: Project[]): Promise<{ ok: boolean; error?: string }> {
   writeLocalProjects(projects);
-  if (BLOB_TOKEN) {
-    const ok = await writeToBlob(projects);
-    if (!ok) return { ok: false, error: "Vercel Blob 저장 실패" };
-  }
+  const result = await writeToBlob(projects);
+  if (!result.ok) return { ok: false, error: `Vercel Blob 저장 실패: ${result.error}` };
   return { ok: true };
 }
 
