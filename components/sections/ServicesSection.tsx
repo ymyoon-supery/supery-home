@@ -6,6 +6,16 @@ interface Props {
   content: SiteContent["services"];
 }
 
+const labelToCat: Record<string, string> = {
+  "SNS Management": "sns-management",
+  "Campaign": "campaign",
+  "Influencer Marketing": "influencer-marketing",
+  "Total Maintenance": "total-maintenance",
+  "Digital Film": "digital-film",
+  "Consulting & Branding": "consulting-branding",
+  "Commerce": "commerce",
+};
+
 export default function ServicesSection({ content }: Props) {
   const titleLines = content.title.split("\n");
   const s = content.titleSize ?? "md";
@@ -80,7 +90,7 @@ export default function ServicesSection({ content }: Props) {
               {content.items.map((service, i) => (
                 <AnimatedSection key={service.label || i} delay={i * 0.07}>
                   <Link
-                    href="/project"
+                    href={labelToCat[service.label] ? `/project?cat=${labelToCat[service.label]}` : "/project"}
                     className="group flex items-center justify-between py-5 hover:pl-4 transition-all duration-200"
                   >
                     <div>
