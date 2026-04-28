@@ -63,6 +63,7 @@ async function writeToBlob(projects: Project[]): Promise<{ ok: boolean; error?: 
     await put(BLOB_PATHNAME, JSON.stringify(projects), {
       access: "public",
       addRandomSuffix: false,
+      allowOverwrite: true,
       contentType: "application/json",
       token: BLOB_TOKEN,
     });
