@@ -64,6 +64,7 @@ async function writeToBlob(projects: Project[]): Promise<{ ok: boolean; error?: 
       access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
+      cacheControlMaxAge: 0,
       contentType: "application/json",
       token: BLOB_TOKEN,
     });
