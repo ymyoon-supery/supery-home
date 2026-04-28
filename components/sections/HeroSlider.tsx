@@ -104,7 +104,7 @@ export default function HeroSlider({ slides }: Props) {
                 </p>
               )}
               <Link
-                href={`/project/${slides[current].id}`}
+                href={`/project?cat=${slides[current].category}`}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#1A1A1A] font-semibold text-sm tracking-widest uppercase rounded-full hover:bg-white/90 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               >
                 View Project
