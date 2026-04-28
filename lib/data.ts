@@ -96,11 +96,15 @@ export async function readProjectsAsync(): Promise<Project[]> {
   return local ?? staticProjects;
 }
 
-export async function writeProjectsAsync(projects: Project[]): Promise<void> {
+export async function writeProjectsAsync(projects: Project[]): Promise<{ ok: boolean; error?: string }> {
   // Always write locally first (fast)
   writeLocalProjects(projects);
   // Then persist to JSONBin
-  await writeToJsonBin(projects);
+  if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
+    const ok = await writeToJsonBin(projects);
+    if (!ok) return { ok: false, error: "JSONBin 저장 실패 (bin 용량 초과 또는 API 오류)" };
+  }
+  return { ok: true };
 }
 
 // Sync shim for legacy callers — prefer Async variants in API routes

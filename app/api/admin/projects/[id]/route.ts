@@ -35,7 +35,8 @@ export async function PUT(req: NextRequest, { params }: Props) {
     featured: Boolean(featured),
   };
 
-  await writeProjectsAsync(projects);
+  const result = await writeProjectsAsync(projects);
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
   revalidatePath("/");
   revalidatePath("/project");
   revalidatePath(`/project/${id}`);

@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
     featured: Boolean(featured),
   };
 
-  await writeProjectsAsync([...projects, newProject]);
+  const result = await writeProjectsAsync([...projects, newProject]);
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
   revalidatePath("/");
   revalidatePath("/project");
 
