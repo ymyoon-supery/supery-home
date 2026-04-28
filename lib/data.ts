@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
+import { put, list } from "@vercel/blob";
 import { projects as staticProjects, type Project, type Category } from "./projects";
 
-// ─── Local file fallback ───────────────────────────────────────────────────
+// ─── Local file cache ──────────────────────────────────────────────────────
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "projects.json");
 
@@ -38,15 +39,47 @@ function writeLocalProjects(projects: Project[]): void {
   }
 }
 
-// ─── JSONBin.io persistent storage ────────────────────────────────────────
+// ─── Vercel Blob (primary storage) ────────────────────────────────────────
+const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN ?? "";
+const BLOB_PATHNAME = "supery-projects.json";
+
+async function readFromBlob(): Promise<Project[] | null> {
+  if (!BLOB_TOKEN) return null;
+  try {
+    const { blobs } = await list({ prefix: BLOB_PATHNAME, token: BLOB_TOKEN });
+    const blob = blobs.find((b) => b.pathname === BLOB_PATHNAME);
+    if (!blob) return null;
+    const res = await fetch(blob.url, { cache: "no-store" });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function writeToBlob(projects: Project[]): Promise<boolean> {
+  if (!BLOB_TOKEN) return false;
+  try {
+    await put(BLOB_PATHNAME, JSON.stringify(projects), {
+      access: "public",
+      addRandomSuffix: false,
+      contentType: "application/json",
+      token: BLOB_TOKEN,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ─── JSONBin (legacy — migration only) ────────────────────────────────────
 const JSONBIN_API_KEY = process.env.JSONBIN_API_KEY ?? "";
 const JSONBIN_BIN_ID = process.env.JSONBIN_BIN_ID ?? "";
-const JSONBIN_BASE = "https://api.jsonbin.io/v3";
 
 async function readFromJsonBin(): Promise<Project[] | null> {
   if (!JSONBIN_API_KEY || !JSONBIN_BIN_ID) return null;
   try {
-    const res = await fetch(`${JSONBIN_BASE}/b/${JSONBIN_BIN_ID}/latest`, {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
       headers: { "X-Master-Key": JSONBIN_API_KEY },
       cache: "no-store",
     });
@@ -58,65 +91,49 @@ async function readFromJsonBin(): Promise<Project[] | null> {
   }
 }
 
-async function writeToJsonBin(projects: Project[]): Promise<boolean> {
-  if (!JSONBIN_API_KEY || !JSONBIN_BIN_ID) return false;
-  try {
-    const res = await fetch(`${JSONBIN_BASE}/b/${JSONBIN_BIN_ID}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": JSONBIN_API_KEY,
-      },
-      body: JSON.stringify(projects),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
 // ─── Public API ────────────────────────────────────────────────────────────
-// readProjects: sync for build-time (generateStaticParams), async for runtime
 export function readProjects(): Project[] {
   const local = readLocalProjects();
   return local ?? staticProjects;
 }
 
 export async function readProjectsAsync(): Promise<Project[]> {
-  // 1. Try JSONBin (persistent, survives deployments)
-  if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
-    const remote = await readFromJsonBin();
-    if (remote) {
-      writeLocalProjects(remote); // cache locally
-      return remote;
+  // 1. Try Vercel Blob (primary)
+  if (BLOB_TOKEN) {
+    const blob = await readFromBlob();
+    if (blob) {
+      writeLocalProjects(blob);
+      return blob;
+    }
+    // Blob empty → auto-migrate from JSONBin
+    const legacy = await readFromJsonBin();
+    if (legacy) {
+      await writeToBlob(legacy);
+      writeLocalProjects(legacy);
+      return legacy;
     }
   }
-  // 2. Fallback to local file
-  const local = readLocalProjects();
-  return local ?? staticProjects;
+  // 2. Fallback: local file → static
+  return readLocalProjects() ?? staticProjects;
 }
 
 export async function writeProjectsAsync(projects: Project[]): Promise<{ ok: boolean; error?: string }> {
-  // Always write locally first (fast)
   writeLocalProjects(projects);
-  // Then persist to JSONBin
-  if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
-    const ok = await writeToJsonBin(projects);
-    if (!ok) return { ok: false, error: "JSONBin 저장 실패 (bin 용량 초과 또는 API 오류)" };
+  if (BLOB_TOKEN) {
+    const ok = await writeToBlob(projects);
+    if (!ok) return { ok: false, error: "Vercel Blob 저장 실패" };
   }
   return { ok: true };
 }
 
-// Sync shim for legacy callers — prefer Async variants in API routes
+// Sync shim for legacy callers
 export function writeProjects(projects: Project[]): void {
   writeLocalProjects(projects);
-  // Fire-and-forget to JSONBin
-  writeToJsonBin(projects).catch(() => {});
+  writeToBlob(projects).catch(() => {});
 }
 
 export async function getProjectByIdFromData(id: string): Promise<Project | undefined> {
-  const projects = await readProjectsAsync();
-  return projects.find((p) => p.id === id);
+  return (await readProjectsAsync()).find((p) => p.id === id);
 }
 
 export async function getFeaturedProjectsFromData(): Promise<Project[]> {
