@@ -42,7 +42,7 @@ export default function PortfolioPreview({ projects }: Props) {
               delay={i * 0.08}
               className={i === 0 ? "md:col-span-2 lg:col-span-1" : ""}
             >
-              <Link href={`/project/${project.id}`} className="group block relative overflow-hidden rounded-2xl bg-[var(--bg-main)] aspect-[4/3]">
+              <Link href={`/project?cat=${project.category}`} className="group block relative overflow-hidden rounded-2xl bg-[var(--bg-main)] aspect-[4/3]">
                 <Image
                   src={project.image}
                   alt={project.title}
