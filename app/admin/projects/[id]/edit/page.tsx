@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getProjectByIdFromData } from "@/lib/data";
 import ProjectForm from "@/components/admin/ProjectForm";
 
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ id: string }>;
 }

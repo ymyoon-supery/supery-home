@@ -52,7 +52,8 @@ export async function DELETE(_req: NextRequest, { params }: Props) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  await writeProjectsAsync(filtered);
+  const result = await writeProjectsAsync(filtered);
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
   revalidatePath("/");
   revalidatePath("/project");
 
