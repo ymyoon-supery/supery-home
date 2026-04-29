@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readProjectsAsync, writeProjectsAsync, readHeroIdsAsync, writeHeroIdsAsync } from "@/lib/data";
+import { readProjectsAsync, writeProjectsAsync } from "@/lib/data";
 import { revalidatePath } from "next/cache";
 import { categoryLabels, type Category } from "@/lib/projects";
 
@@ -50,43 +50,35 @@ export async function PATCH(req: NextRequest, { params }: Props) {
   const body = await req.json();
   const newInHero = Boolean(body.inHero);
 
-  // Read only the hero IDs file — avoids race condition with full projects blob
-  const heroIds = await readHeroIdsAsync();
+  const projects = await readProjectsAsync();
+  const index = projects.findIndex((p) => p.id === id);
+  if (index === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  let updated: string[];
   if (newInHero) {
-    if (!heroIds.includes(id)) {
-      if (heroIds.length >= 5) {
-        return NextResponse.json({ error: "Hero 슬라이더는 최대 5개까지 선택할 수 있습니다." }, { status: 400 });
-      }
-      updated = [...heroIds, id];
-    } else {
-      updated = heroIds; // 이미 포함되어 있어도 항상 write해서 최신 상태 보장
+    const heroCount = projects.filter((p, i) => i !== index && p.inHero).length;
+    if (heroCount >= 5) {
+      return NextResponse.json({ error: "Hero 슬라이더는 최대 5개까지 선택할 수 있습니다." }, { status: 400 });
     }
-  } else {
-    updated = heroIds.filter((hid) => hid !== id);
   }
 
-  const result = await writeHeroIdsAsync(updated);
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+  projects[index] = { ...projects[index], inHero: newInHero };
 
+  const result = await writeProjectsAsync(projects);
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
   revalidatePath("/");
-  return NextResponse.json({ inHero: newInHero });
+
+  return NextResponse.json({ inHero: projects[index].inHero });
 }
 
 export async function DELETE(_req: NextRequest, { params }: Props) {
   const { id } = await params;
-  const [projects, heroIds] = await Promise.all([readProjectsAsync(), readHeroIdsAsync()]);
+  const projects = await readProjectsAsync();
   const filtered = projects.filter((p) => p.id !== id);
   if (filtered.length === projects.length) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const writes: Promise<unknown>[] = [writeProjectsAsync(filtered)];
-  if (heroIds.includes(id)) {
-    writes.push(writeHeroIdsAsync(heroIds.filter((hid) => hid !== id)));
-  }
-  const [result] = await Promise.all(writes) as [{ ok: boolean; error?: string }];
+  const result = await writeProjectsAsync(filtered);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
   revalidatePath("/");
   revalidatePath("/project");
