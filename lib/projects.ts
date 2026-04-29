@@ -20,6 +20,8 @@ export interface Project {
   category: Exclude<Category, "all">;
   categoryLabel: string;
   image: string; // 대표 이미지
+  heroImage?: string; // Hero 슬라이더용 16:9 이미지 (없으면 image 사용)
+  inHero?: boolean; // Hero 슬라이더 노출 여부 (최대 5개)
   media?: MediaItem[]; // 전체 미디어 (최대 10개)
   description?: string;
   featured?: boolean;

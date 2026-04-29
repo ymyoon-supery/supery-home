@@ -30,11 +30,14 @@ export default function ProjectForm({ project }: Props) {
   });
   const [mediaItems, setMediaItems] = useState<MediaItem[]>(initMedia);
   const [coverIndex, setCoverIndex] = useState(0);
+  const [heroImage, setHeroImage] = useState<string>(project?.heroImage ?? "");
+  const [uploadingHero, setUploadingHero] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const heroFileRef = useRef<HTMLInputElement>(null);
 
   const parseYouTubeId = (url: string): string | null => {
     // youtu.be/ID 또는 youtube.com/shorts/ID
@@ -63,6 +66,31 @@ export default function ProjectForm({ project }: Props) {
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
+  };
+
+  const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingHero(true);
+    setError("");
+    try {
+      const cloudName = process.env.NEXT_PUBLIC_CLD_CLOUD_NAME;
+      const uploadPreset = process.env.NEXT_PUBLIC_CLD_UPLOAD_PRESET;
+      if (!cloudName || !uploadPreset) throw new Error("Cloudinary 환경 변수가 설정되지 않았습니다.");
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", uploadPreset);
+      fd.append("folder", "supery/hero");
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message ?? "업로드 실패");
+      setHeroImage(data.secure_url);
+    } catch (err) {
+      setError(`Hero 이미지 업로드 오류: ${String(err)}`);
+    } finally {
+      setUploadingHero(false);
+      if (heroFileRef.current) heroFileRef.current.value = "";
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,6 +157,7 @@ export default function ProjectForm({ project }: Props) {
     const payload = {
       ...form,
       image: coverImageUrl,
+      heroImage: heroImage || undefined,
       media: reorderedMedia,
     };
 
@@ -324,6 +353,36 @@ export default function ProjectForm({ project }: Props) {
           </div>
         )}
       </div>
+
+      {/* Hero Image — 수정 시에만 표시 */}
+      {isEdit && <div>
+        <label className="block text-xs font-semibold tracking-widest text-[#777] uppercase mb-2">
+          Hero 슬라이더 이미지 (16:9 권장)
+        </label>
+        <p className="text-xs text-[#AAA] mb-3">미등록 시 대표 이미지가 Hero에 사용됩니다.</p>
+        <div className="flex items-start gap-4">
+          {heroImage ? (
+            <div className="relative w-48 rounded-xl overflow-hidden bg-[#F5F5F3] border border-[#E0E0DC]" style={{ aspectRatio: "16/9" }}>
+              <Image src={heroImage} alt="Hero" fill className="object-cover" unoptimized sizes="192px" />
+              <button
+                type="button"
+                onClick={() => setHeroImage("")}
+                className="absolute top-1 right-1 w-6 h-6 rounded-full bg-white text-red-500 flex items-center justify-center text-xs hover:bg-red-500 hover:text-white transition-colors"
+              >✕</button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => heroFileRef.current?.click()}
+              disabled={uploadingHero}
+              className="flex items-center gap-2 px-4 py-2 border border-dashed border-[#E0E0DC] rounded-xl text-sm text-[#777] hover:border-[#1A1A1A] transition-colors disabled:opacity-50"
+            >
+              {uploadingHero ? "업로드 중..." : "+ Hero 이미지 업로드"}
+            </button>
+          )}
+          <input ref={heroFileRef} type="file" accept="image/*" onChange={handleHeroUpload} className="hidden" />
+        </div>
+      </div>}
 
       {/* Featured */}
       <label className="flex items-center gap-3 cursor-pointer">

@@ -2,18 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { readProjectsAsync } from "@/lib/data";
 import AdminDeleteButton from "@/components/admin/AdminDeleteButton";
+import AdminHeroButton from "@/components/admin/AdminHeroButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminProjectsPage() {
   const projects = await readProjectsAsync();
+  const heroCount = projects.filter((p) => p.inHero).length;
 
   return (
     <main className="max-w-5xl mx-auto px-6 py-10">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-[#1A1A1A]">프로젝트 관리</h1>
-          <p className="text-sm text-[#777] mt-1">총 {projects.length}개</p>
+          <p className="text-sm text-[#777] mt-1">총 {projects.length}개 · Hero 노출 {heroCount}/5</p>
         </div>
         <Link
           href="/admin/projects/new"
@@ -78,6 +80,7 @@ export default async function AdminProjectsPage() {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-2">
+                      <AdminHeroButton id={project.id} inHero={project.inHero ?? false} />
                       <Link
                         href={`/admin/projects/${project.id}/edit`}
                         className="px-3 py-1.5 text-xs font-semibold text-[#555] border border-[#E0E0DC] rounded-lg hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-colors"

@@ -15,12 +15,14 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   try {
-    const [featured, siteContent] = await Promise.all([
-      getFeaturedProjectsFromData(),
+    const [allProjects, siteContent] = await Promise.all([
+      readProjectsAsync(),
       readSiteContentAsync(),
     ]);
-    const allProjects = featured.length > 0 ? featured : await readProjectsAsync();
-    const slides = allProjects.slice(0, 5);
+    const heroProjects = allProjects.filter((p) => p.inHero);
+    const slides = heroProjects.length > 0
+      ? heroProjects.map((p) => ({ ...p, image: p.heroImage || p.image }))
+      : allProjects.slice(0, 5).map((p) => ({ ...p, image: p.heroImage || p.image }));
 
     return (
       <>
