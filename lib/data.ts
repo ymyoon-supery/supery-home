@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { put, list } from "@vercel/blob";
+import { put, list, get } from "@vercel/blob";
 import { projects as staticProjects, type Project, type Category } from "./projects";
 
 // ─── Local file cache ──────────────────────────────────────────────────────
@@ -46,13 +46,13 @@ const BLOB_PATHNAME = "supery-projects.json";
 async function readFromBlob(): Promise<Project[] | null> {
   if (!BLOB_TOKEN) return null;
   try {
-    const { blobs } = await list({ prefix: BLOB_PATHNAME, token: BLOB_TOKEN });
-    const blob = blobs.find((b) => b.pathname === BLOB_PATHNAME);
-    if (!blob) return null;
-    // Append timestamp to bust CDN cache and always fetch from origin
-    const res = await fetch(`${blob.url}?t=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) return null;
-    return res.json();
+    // get() with useCache:false adds ?cache=0 — bypasses Vercel CDN, reads from origin
+    const res = await get(BLOB_PATHNAME, { access: "public", token: BLOB_TOKEN, useCache: false });
+    if (!res || res.statusCode === 304) return null;
+    const { stream } = res as { stream: ReadableStream; statusCode: number };
+    if (!stream) return null;
+    const text = await new Response(stream).text();
+    return JSON.parse(text);
   } catch {
     return null;
   }
