@@ -46,8 +46,8 @@ const BLOB_PATHNAME = "supery-projects.json";
 async function readFromBlob(): Promise<Project[] | null> {
   if (!BLOB_TOKEN) return null;
   try {
-    // private blob: no CDN, reads directly from origin — always fresh
-    const res = await get(BLOB_PATHNAME, { access: "private", token: BLOB_TOKEN });
+    // useCache:false → ?cache=0 (Vercel-specific CDN bypass, different from generic ?t= busting)
+    const res = await get(BLOB_PATHNAME, { access: "public", token: BLOB_TOKEN, useCache: false });
     if (!res) return null;
     const { stream } = res as { stream: ReadableStream; statusCode: number };
     if (!stream) return null;
@@ -62,9 +62,10 @@ async function writeToBlob(projects: Project[]): Promise<{ ok: boolean; error?: 
   if (!BLOB_TOKEN) return { ok: false, error: "BLOB_READ_WRITE_TOKEN 환경변수 없음" };
   try {
     await put(BLOB_PATHNAME, JSON.stringify(projects), {
-      access: "private",
+      access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
+      cacheControlMaxAge: 0,
       contentType: "application/json",
       token: BLOB_TOKEN,
     });
