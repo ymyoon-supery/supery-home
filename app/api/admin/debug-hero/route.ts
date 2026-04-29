@@ -8,6 +8,12 @@ export async function GET() {
     heroIds,
     heroCount: heroIds.length,
     mergedHeroCount: heroProjects.length,
-    heroProjects: heroProjects.map((p) => ({ id: p.id, title: p.title })),
+    heroProjects: heroProjects.map((p) => ({
+      id: p.id,
+      title: p.title,
+      image: p.image || "(없음)",
+      heroImage: p.heroImage || "(없음)",
+      slideImage: p.heroImage || p.image || "(없음)",
+    })),
   });
 }
