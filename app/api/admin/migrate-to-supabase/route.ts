@@ -14,9 +14,8 @@ export async function POST() {
       return NextResponse.json({ error: "Vercel Blob에서 데이터를 찾을 수 없습니다." }, { status: 404 });
     }
 
-    const res = await fetch(`${blob.url}?cache=0`, {
+    const res = await fetch(`${blob.url}`, {
       cache: "no-store",
-      headers: { Authorization: `Bearer ${BLOB_TOKEN}` },
     });
     if (!res.ok) {
       return NextResponse.json({ error: "Blob 읽기 실패" }, { status: 500 });
