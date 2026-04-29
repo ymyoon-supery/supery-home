@@ -52,20 +52,23 @@ export async function PATCH(req: NextRequest, { params }: Props) {
 
   // Read only the hero IDs file — avoids race condition with full projects blob
   const heroIds = await readHeroIdsAsync();
-  const alreadyInHero = heroIds.includes(id);
 
-  if (newInHero && !alreadyInHero) {
-    if (heroIds.length >= 5) {
-      return NextResponse.json({ error: "Hero 슬라이더는 최대 5개까지 선택할 수 있습니다." }, { status: 400 });
+  let updated: string[];
+  if (newInHero) {
+    if (!heroIds.includes(id)) {
+      if (heroIds.length >= 5) {
+        return NextResponse.json({ error: "Hero 슬라이더는 최대 5개까지 선택할 수 있습니다." }, { status: 400 });
+      }
+      updated = [...heroIds, id];
+    } else {
+      updated = heroIds; // 이미 포함되어 있어도 항상 write해서 최신 상태 보장
     }
-    const updated = [...heroIds, id];
-    const result = await writeHeroIdsAsync(updated);
-    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
-  } else if (!newInHero && alreadyInHero) {
-    const updated = heroIds.filter((hid) => hid !== id);
-    const result = await writeHeroIdsAsync(updated);
-    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+  } else {
+    updated = heroIds.filter((hid) => hid !== id);
   }
+
+  const result = await writeHeroIdsAsync(updated);
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
 
   revalidatePath("/");
   return NextResponse.json({ inHero: newInHero });
