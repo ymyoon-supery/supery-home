@@ -42,6 +42,7 @@ function writeLocalProjects(projects: Project[]): void {
 // ─── Vercel Blob (primary storage) ────────────────────────────────────────
 const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN ?? "";
 const BLOB_PATHNAME = "supery-projects.json";
+const HERO_IDS_PATHNAME = "supery-hero-ids.json";
 
 async function readFromBlob(): Promise<Project[] | null> {
   if (!BLOB_TOKEN) return null;
@@ -49,11 +50,8 @@ async function readFromBlob(): Promise<Project[] | null> {
     const { blobs } = await list({ prefix: BLOB_PATHNAME, token: BLOB_TOKEN });
     const blob = blobs.find((b) => b.pathname === BLOB_PATHNAME);
     if (!blob) return null;
-    // downloadUrl은 CDN을 우회하여 항상 최신 데이터를 반환
-    const res = await fetch(blob.downloadUrl, {
-      cache: "no-store",
-      headers: { Authorization: `Bearer ${BLOB_TOKEN}` },
-    });
+    // downloadUrl은 pre-signed URL로 CDN을 우회하여 항상 최신 데이터 반환
+    const res = await fetch(blob.downloadUrl, { cache: "no-store" });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -76,6 +74,47 @@ async function writeToBlob(projects: Project[]): Promise<{ ok: boolean; error?: 
   } catch (err) {
     return { ok: false, error: String(err) };
   }
+}
+
+// ─── Hero IDs (separate small blob to prevent race conditions) ─────────────
+async function readHeroIdsFromBlob(): Promise<string[] | null> {
+  if (!BLOB_TOKEN) return null;
+  try {
+    const { blobs } = await list({ prefix: HERO_IDS_PATHNAME, token: BLOB_TOKEN });
+    const blob = blobs.find((b) => b.pathname === HERO_IDS_PATHNAME);
+    if (!blob) return null;
+    const res = await fetch(blob.downloadUrl, { cache: "no-store" });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function writeHeroIdsToBlob(ids: string[]): Promise<{ ok: boolean; error?: string }> {
+  if (!BLOB_TOKEN) return { ok: false, error: "BLOB_READ_WRITE_TOKEN 환경변수 없음" };
+  try {
+    await put(HERO_IDS_PATHNAME, JSON.stringify(ids), {
+      access: "public",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      cacheControlMaxAge: 0,
+      contentType: "application/json",
+      token: BLOB_TOKEN,
+    });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+}
+
+export async function readHeroIdsAsync(): Promise<string[]> {
+  const ids = await readHeroIdsFromBlob();
+  return ids ?? [];
+}
+
+export async function writeHeroIdsAsync(ids: string[]): Promise<{ ok: boolean; error?: string }> {
+  return writeHeroIdsToBlob(ids);
 }
 
 // ─── JSONBin (legacy — migration only) ────────────────────────────────────
@@ -106,10 +145,18 @@ export function readProjects(): Project[] {
 export async function readProjectsAsync(): Promise<Project[]> {
   // 1. Try Vercel Blob (primary)
   if (BLOB_TOKEN) {
-    const blob = await readFromBlob();
+    const [blob, heroIds] = await Promise.all([
+      readFromBlob(),
+      readHeroIdsFromBlob(),
+    ]);
     if (blob) {
-      writeLocalProjects(blob);
-      return blob;
+      // Merge inHero from the dedicated hero IDs file (source of truth)
+      const idSet = heroIds ? new Set(heroIds) : null;
+      const merged = idSet
+        ? blob.map((p) => ({ ...p, inHero: idSet.has(p.id) }))
+        : blob;
+      writeLocalProjects(merged);
+      return merged;
     }
     // Blob empty → auto-migrate from JSONBin
     const legacy = await readFromJsonBin();
