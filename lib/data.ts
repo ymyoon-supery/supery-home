@@ -124,6 +124,21 @@ export async function getProjectByIdFromData(id: string): Promise<Project | unde
   }
 }
 
+export async function getHeroProjectsFromData(): Promise<Project[]> {
+  if (!hasSupabase()) return [];
+  try {
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("in_hero", true)
+      .order("hero_order", { ascending: true, nullsFirst: false });
+    if (error || !data) return [];
+    return data.map(rowToProject);
+  } catch {
+    return [];
+  }
+}
+
 export async function getFeaturedProjectsFromData(): Promise<Project[]> {
   if (!hasSupabase()) return staticProjects.filter((p) => p.featured);
   try {

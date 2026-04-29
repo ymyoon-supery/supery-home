@@ -2,7 +2,7 @@ import GradientHero from "@/components/sections/GradientHero";
 import HeroSlider from "@/components/sections/HeroSlider";
 import ServicesSection from "@/components/sections/ServicesSection";
 import PortfolioPreview from "@/components/sections/PortfolioPreview";
-import { getFeaturedProjectsFromData, readProjectsAsync } from "@/lib/data";
+import { getHeroProjectsFromData, readProjectsAsync } from "@/lib/data";
 import { readSiteContentAsync } from "@/lib/siteData";
 import type { Metadata } from "next";
 
@@ -15,11 +15,11 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   try {
-    const [allProjects, siteContent] = await Promise.all([
+    const [allProjects, heroProjects, siteContent] = await Promise.all([
       readProjectsAsync(),
+      getHeroProjectsFromData(),
       readSiteContentAsync(),
     ]);
-    const heroProjects = allProjects.filter((p) => p.inHero);
     const slides = heroProjects.length > 0
       ? heroProjects.map((p) => ({ ...p, image: p.heroImage || p.image }))
       : allProjects.slice(0, 5).map((p) => ({ ...p, image: p.heroImage || p.image }));

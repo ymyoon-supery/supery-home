@@ -54,11 +54,25 @@ export async function PATCH(req: NextRequest, { params }: Props) {
     }
   }
 
-  // Direct single-column update — no read-modify-write, no race condition
-  const result = await updateProject(id, { inHero: newInHero });
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
-  revalidatePath("/");
+  if (newInHero) {
+    // Get next hero_order (max + 1)
+    const { supabase } = await import("@/lib/supabase");
+    const { data } = await supabase
+      .from("projects")
+      .select("hero_order")
+      .eq("in_hero", true)
+      .order("hero_order", { ascending: false })
+      .limit(1);
+    const nextOrder = data && data[0]?.hero_order != null ? data[0].hero_order + 1 : 1;
+    const { error } = await supabase.from("projects").update({ in_hero: true, hero_order: nextOrder }).eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  } else {
+    const { supabase } = await import("@/lib/supabase");
+    const { error } = await supabase.from("projects").update({ in_hero: false, hero_order: null }).eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
+  revalidatePath("/");
   return NextResponse.json({ inHero: newInHero });
 }
 
