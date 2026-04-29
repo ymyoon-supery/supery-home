@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Props {
   id: string;
@@ -10,10 +11,13 @@ interface Props {
 export default function AdminHeroButton({ id, inHero: initial }: Props) {
   const [inHero, setInHero] = useState(initial);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const toggle = async () => {
     const newValue = !inHero;
     setLoading(true);
+    // Optimistically update UI immediately
+    setInHero(newValue);
     const res = await fetch(`/api/admin/projects/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -21,8 +25,11 @@ export default function AdminHeroButton({ id, inHero: initial }: Props) {
     });
     const data = await res.json();
     if (res.ok) {
-      setInHero(data.inHero);
+      // Refresh server component to sync with actual saved state
+      router.refresh();
     } else {
+      // Revert optimistic update on error
+      setInHero(!newValue);
       alert(data.error ?? "오류가 발생했습니다.");
     }
     setLoading(false);
