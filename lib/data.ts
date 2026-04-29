@@ -45,6 +45,7 @@ export async function readProjectsAsync(): Promise<Project[]> {
     const { data, error } = await supabase
       .from("projects")
       .select("*")
+      .order("position", { ascending: true })
       .order("created_at", { ascending: false });
     if (error || !data) return staticProjects;
     return data.map(rowToProject);
@@ -69,7 +70,7 @@ export async function writeProjectsAsync(projects: Project[]): Promise<{ ok: boo
 export async function insertProject(project: Project): Promise<{ ok: boolean; error?: string }> {
   if (!hasSupabase()) return { ok: false, error: "Supabase 환경변수 없음" };
   try {
-    const { error } = await supabase.from("projects").insert(projectToRow(project));
+    const { error } = await supabase.from("projects").insert({ ...projectToRow(project), position: 0 });
     if (error) return { ok: false, error: error.message };
     return { ok: true };
   } catch (err) {

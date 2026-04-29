@@ -28,7 +28,7 @@ export async function POST() {
 
     // 2. Map to Supabase row format
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rows = projects.map((p: any) => ({
+    const rows = projects.map((p: any, i: number) => ({
       id: p.id,
       title: p.title,
       category: p.category,
@@ -39,6 +39,7 @@ export async function POST() {
       in_hero: p.inHero ?? false,
       media: p.media ?? [],
       featured: p.featured ?? false,
+      position: i,
     }));
 
     // 3. Upsert into Supabase (safe to run multiple times)
