@@ -49,7 +49,11 @@ async function readFromBlob(): Promise<Project[] | null> {
     const { blobs } = await list({ prefix: BLOB_PATHNAME, token: BLOB_TOKEN });
     const blob = blobs.find((b) => b.pathname === BLOB_PATHNAME);
     if (!blob) return null;
-    const res = await fetch(blob.url, { cache: "no-store" });
+    // downloadUrl은 CDN을 우회하여 항상 최신 데이터를 반환
+    const res = await fetch(blob.downloadUrl, {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${BLOB_TOKEN}` },
+    });
     if (!res.ok) return null;
     return res.json();
   } catch {
