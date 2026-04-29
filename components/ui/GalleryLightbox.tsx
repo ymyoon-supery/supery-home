@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { MediaItem } from "@/lib/projects";
 
-// Cloudinary URL에 변환 파라미터 삽입 (비-Cloudinary URL은 그대로)
+// Cloudinary URL에 변환 파라미터 삽입 (GIF와 비-Cloudinary URL은 그대로)
 function cldUrl(url: string, transform: string): string {
   if (!url?.includes("res.cloudinary.com")) return url;
+  if (url.toLowerCase().endsWith(".gif")) return url; // GIF: 변환 없이 원본 서빙
   return url.replace("/upload/", `/upload/${transform}/`);
 }
 
