@@ -150,13 +150,19 @@ export async function readProjectsAsync(): Promise<Project[]> {
       readHeroIdsFromBlob(),
     ]);
     if (blob) {
-      // Merge inHero from the dedicated hero IDs file (source of truth)
-      const idSet = heroIds ? new Set(heroIds) : null;
-      const merged = idSet
-        ? blob.map((p) => ({ ...p, inHero: idSet.has(p.id) }))
-        : blob;
-      writeLocalProjects(merged);
-      return merged;
+      if (heroIds !== null) {
+        // Hero IDs file exists — it is the source of truth
+        const idSet = new Set(heroIds);
+        const merged = blob.map((p) => ({ ...p, inHero: idSet.has(p.id) }));
+        writeLocalProjects(merged);
+        return merged;
+      } else {
+        // Hero IDs file doesn't exist yet — migrate from inHero fields in projects blob
+        const existingHeroIds = blob.filter((p) => p.inHero).map((p) => p.id);
+        writeHeroIdsToBlob(existingHeroIds).catch(() => {});
+        writeLocalProjects(blob);
+        return blob;
+      }
     }
     // Blob empty → auto-migrate from JSONBin
     const legacy = await readFromJsonBin();
