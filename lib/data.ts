@@ -1,154 +1,154 @@
-import fs from "fs";
-import path from "path";
-import { put, list } from "@vercel/blob";
+import { supabase } from "./supabase";
 import { projects as staticProjects, type Project, type Category } from "./projects";
 
-// ─── Local file cache ──────────────────────────────────────────────────────
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "projects.json");
+// ─── Row ↔ Project mapping ─────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToProject(row: any): Project {
+  return {
+    id: row.id,
+    title: row.title,
+    category: row.category as Exclude<Category, "all">,
+    categoryLabel: row.category_label,
+    description: row.description ?? "",
+    image: row.image,
+    heroImage: row.hero_image ?? undefined,
+    inHero: row.in_hero ?? false,
+    media: row.media ?? [],
+    featured: row.featured ?? false,
+  };
+}
 
-function ensureDataFile(): void {
+function projectToRow(p: Project) {
+  return {
+    id: p.id,
+    title: p.title,
+    category: p.category,
+    category_label: p.categoryLabel,
+    description: p.description ?? "",
+    image: p.image,
+    hero_image: p.heroImage ?? null,
+    in_hero: p.inHero ?? false,
+    media: p.media ?? [],
+    featured: p.featured ?? false,
+  };
+}
+
+// ─── Check if Supabase is configured ──────────────────────────────────────
+function hasSupabase(): boolean {
+  return !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+// ─── Public API ────────────────────────────────────────────────────────────
+export async function readProjectsAsync(): Promise<Project[]> {
+  if (!hasSupabase()) return staticProjects;
   try {
-    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-    if (!fs.existsSync(DATA_FILE)) {
-      fs.writeFileSync(DATA_FILE, JSON.stringify(staticProjects, null, 2), "utf-8");
-    }
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error || !data) return staticProjects;
+    return data.map(rowToProject);
   } catch {
-    // read-only filesystem — ignore
+    return staticProjects;
   }
 }
 
-function readLocalProjects(): Project[] | null {
+export async function writeProjectsAsync(projects: Project[]): Promise<{ ok: boolean; error?: string }> {
+  if (!hasSupabase()) return { ok: false, error: "Supabase 환경변수 없음" };
   try {
-    ensureDataFile();
-    if (fs.existsSync(DATA_FILE)) {
-      return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-    }
-  } catch {
-    // ignore
-  }
-  return null;
-}
-
-function writeLocalProjects(projects: Project[]): void {
-  try {
-    ensureDataFile();
-    fs.writeFileSync(DATA_FILE, JSON.stringify(projects, null, 2), "utf-8");
-  } catch {
-    // ignore on ephemeral filesystem
-  }
-}
-
-// ─── Vercel Blob ────────────────────────────────────────────────────────────
-const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN ?? "";
-const BLOB_PATHNAME = "supery-projects.json";
-
-async function readFromBlob(): Promise<Project[] | null> {
-  if (!BLOB_TOKEN) return null;
-  try {
-    // 1. list() to get the real blob URL (management API, not CDN)
-    const { blobs } = await list({ prefix: BLOB_PATHNAME, token: BLOB_TOKEN });
-    const blob = blobs.find((b) => b.pathname === BLOB_PATHNAME);
-    if (!blob) return null;
-    // 2. Fetch with Authorization + ?cache=0 to bypass CDN entirely
-    //    (Authorization header causes Cloudflare/CDN to skip cache)
-    const url = `${blob.url}?cache=0`;
-    const res = await fetch(url, {
-      cache: "no-store",
-      headers: { Authorization: `Bearer ${BLOB_TOKEN}` },
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
-async function writeToBlob(projects: Project[]): Promise<{ ok: boolean; error?: string }> {
-  if (!BLOB_TOKEN) return { ok: false, error: "BLOB_READ_WRITE_TOKEN 환경변수 없음" };
-  try {
-    await put(BLOB_PATHNAME, JSON.stringify(projects), {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      cacheControlMaxAge: 0,
-      contentType: "application/json",
-      token: BLOB_TOKEN,
-    });
+    const rows = projects.map(projectToRow);
+    // upsert all — replaces entire dataset
+    const { error } = await supabase.from("projects").upsert(rows, { onConflict: "id" });
+    if (error) return { ok: false, error: error.message };
     return { ok: true };
   } catch (err) {
     return { ok: false, error: String(err) };
   }
 }
 
-// ─── JSONBin (legacy — migration only) ────────────────────────────────────
-const JSONBIN_API_KEY = process.env.JSONBIN_API_KEY ?? "";
-const JSONBIN_BIN_ID = process.env.JSONBIN_BIN_ID ?? "";
-
-async function readFromJsonBin(): Promise<Project[] | null> {
-  if (!JSONBIN_API_KEY || !JSONBIN_BIN_ID) return null;
+export async function insertProject(project: Project): Promise<{ ok: boolean; error?: string }> {
+  if (!hasSupabase()) return { ok: false, error: "Supabase 환경변수 없음" };
   try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-      headers: { "X-Master-Key": JSONBIN_API_KEY },
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.record as Project[];
-  } catch {
-    return null;
+    const { error } = await supabase.from("projects").insert(projectToRow(project));
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
   }
 }
 
-// ─── Public API ────────────────────────────────────────────────────────────
-export function readProjects(): Project[] {
-  const local = readLocalProjects();
-  return local ?? staticProjects;
-}
+export async function updateProject(id: string, patch: Partial<Project>): Promise<{ ok: boolean; error?: string }> {
+  if (!hasSupabase()) return { ok: false, error: "Supabase 환경변수 없음" };
+  try {
+    // Build only the changed columns
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const row: Record<string, any> = {};
+    if (patch.title !== undefined) row.title = patch.title;
+    if (patch.category !== undefined) row.category = patch.category;
+    if (patch.categoryLabel !== undefined) row.category_label = patch.categoryLabel;
+    if (patch.description !== undefined) row.description = patch.description;
+    if (patch.image !== undefined) row.image = patch.image;
+    if (patch.heroImage !== undefined) row.hero_image = patch.heroImage;
+    if (patch.inHero !== undefined) row.in_hero = patch.inHero;
+    if (patch.media !== undefined) row.media = patch.media;
+    if (patch.featured !== undefined) row.featured = patch.featured;
 
-export async function readProjectsAsync(): Promise<Project[]> {
-  // 1. Try Vercel Blob (primary)
-  if (BLOB_TOKEN) {
-    const blob = await readFromBlob();
-    if (blob) {
-      writeLocalProjects(blob);
-      return blob;
-    }
-    // Blob empty → auto-migrate from JSONBin
-    const legacy = await readFromJsonBin();
-    if (legacy) {
-      await writeToBlob(legacy);
-      writeLocalProjects(legacy);
-      return legacy;
-    }
+    const { error } = await supabase.from("projects").update(row).eq("id", id);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
   }
-  // 2. Fallback: local file → static
-  return readLocalProjects() ?? staticProjects;
 }
 
-export async function writeProjectsAsync(projects: Project[]): Promise<{ ok: boolean; error?: string }> {
-  writeLocalProjects(projects);
-  const result = await writeToBlob(projects);
-  if (!result.ok) return { ok: false, error: `Vercel Blob 저장 실패: ${result.error}` };
-  return { ok: true };
-}
-
-// Sync shim for legacy callers
-export function writeProjects(projects: Project[]): void {
-  writeLocalProjects(projects);
-  writeToBlob(projects).catch(() => {});
+export async function deleteProject(id: string): Promise<{ ok: boolean; error?: string }> {
+  if (!hasSupabase()) return { ok: false, error: "Supabase 환경변수 없음" };
+  try {
+    const { error } = await supabase.from("projects").delete().eq("id", id);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
 }
 
 export async function getProjectByIdFromData(id: string): Promise<Project | undefined> {
-  return (await readProjectsAsync()).find((p) => p.id === id);
+  if (!hasSupabase()) return staticProjects.find((p) => p.id === id);
+  try {
+    const { data, error } = await supabase.from("projects").select("*").eq("id", id).single();
+    if (error || !data) return undefined;
+    return rowToProject(data);
+  } catch {
+    return undefined;
+  }
 }
 
 export async function getFeaturedProjectsFromData(): Promise<Project[]> {
-  return (await readProjectsAsync()).filter((p) => p.featured);
+  if (!hasSupabase()) return staticProjects.filter((p) => p.featured);
+  try {
+    const { data, error } = await supabase.from("projects").select("*").eq("featured", true);
+    if (error || !data) return [];
+    return data.map(rowToProject);
+  } catch {
+    return [];
+  }
 }
 
 export async function getProjectsByCategoryFromData(category: Category): Promise<Project[]> {
-  const all = await readProjectsAsync();
-  if (category === "all") return all;
-  return all.filter((p) => p.category === category);
+  if (!hasSupabase()) {
+    return category === "all" ? staticProjects : staticProjects.filter((p) => p.category === category);
+  }
+  try {
+    let query = supabase.from("projects").select("*");
+    if (category !== "all") query = query.eq("category", category);
+    const { data, error } = await query;
+    if (error || !data) return [];
+    return data.map(rowToProject);
+  } catch {
+    return [];
+  }
 }
+
+// Legacy shims
+export function readProjects(): Project[] { return staticProjects; }
+export function writeProjects(_projects: Project[]): void { /* no-op */ }
