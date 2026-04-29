@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { put, list, get } from "@vercel/blob";
+import { put, list } from "@vercel/blob";
 import { projects as staticProjects, type Project, type Category } from "./projects";
 
 // ─── Local file cache ──────────────────────────────────────────────────────
@@ -46,13 +46,19 @@ const BLOB_PATHNAME = "supery-projects.json";
 async function readFromBlob(): Promise<Project[] | null> {
   if (!BLOB_TOKEN) return null;
   try {
-    // useCache:false → ?cache=0 (Vercel-specific CDN bypass, different from generic ?t= busting)
-    const res = await get(BLOB_PATHNAME, { access: "public", token: BLOB_TOKEN, useCache: false });
-    if (!res) return null;
-    const { stream } = res as { stream: ReadableStream; statusCode: number };
-    if (!stream) return null;
-    const text = await new Response(stream).text();
-    return JSON.parse(text);
+    // 1. list() to get the real blob URL (management API, not CDN)
+    const { blobs } = await list({ prefix: BLOB_PATHNAME, token: BLOB_TOKEN });
+    const blob = blobs.find((b) => b.pathname === BLOB_PATHNAME);
+    if (!blob) return null;
+    // 2. Fetch with Authorization + ?cache=0 to bypass CDN entirely
+    //    (Authorization header causes Cloudflare/CDN to skip cache)
+    const url = `${blob.url}?cache=0`;
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${BLOB_TOKEN}` },
+    });
+    if (!res.ok) return null;
+    return res.json();
   } catch {
     return null;
   }

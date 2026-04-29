@@ -67,7 +67,11 @@ export async function PATCH(req: NextRequest, { params }: Props) {
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
   revalidatePath("/");
 
-  return NextResponse.json({ inHero: projects[index].inHero });
+  // Read back immediately to verify write persisted
+  const verified = await readProjectsAsync();
+  const savedInHero = verified.find((p) => p.id === id)?.inHero ?? false;
+
+  return NextResponse.json({ inHero: savedInHero });
 }
 
 export async function DELETE(_req: NextRequest, { params }: Props) {
