@@ -49,8 +49,8 @@ async function readFromBlob(): Promise<Project[] | null> {
     const { blobs } = await list({ prefix: BLOB_PATHNAME, token: BLOB_TOKEN });
     const blob = blobs.find((b) => b.pathname === BLOB_PATHNAME);
     if (!blob) return null;
-    // downloadUrl: pre-signed, CDN bypass — always returns latest data
-    const res = await fetch(blob.downloadUrl, { cache: "no-store" });
+    // Append timestamp to bust CDN cache and always fetch from origin
+    const res = await fetch(`${blob.url}?t=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) return null;
     return res.json();
   } catch {
