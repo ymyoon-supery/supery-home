@@ -12,8 +12,13 @@ export default function AdminHeroButton({ id, inHero: initial }: Props) {
   const [loading, setLoading] = useState(false);
 
   const toggle = async () => {
+    const newValue = !inHero;
     setLoading(true);
-    const res = await fetch(`/api/admin/projects/${id}`, { method: "PATCH" });
+    const res = await fetch(`/api/admin/projects/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inHero: newValue }),
+    });
     const data = await res.json();
     if (res.ok) {
       setInHero(data.inHero);

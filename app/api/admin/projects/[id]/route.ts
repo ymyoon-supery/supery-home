@@ -45,20 +45,23 @@ export async function PUT(req: NextRequest, { params }: Props) {
   return NextResponse.json(projects[index]);
 }
 
-export async function PATCH(_req: NextRequest, { params }: Props) {
+export async function PATCH(req: NextRequest, { params }: Props) {
   const { id } = await params;
+  const body = await req.json();
+  const newInHero = Boolean(body.inHero);
+
   const projects = await readProjectsAsync();
   const index = projects.findIndex((p) => p.id === id);
   if (index === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const heroCount = projects.filter((p) => p.inHero).length;
-  const currentlyInHero = projects[index].inHero ?? false;
-
-  if (!currentlyInHero && heroCount >= 5) {
-    return NextResponse.json({ error: "Hero 슬라이더는 최대 5개까지 선택할 수 있습니다." }, { status: 400 });
+  if (newInHero) {
+    const heroCount = projects.filter((p, i) => i !== index && p.inHero).length;
+    if (heroCount >= 5) {
+      return NextResponse.json({ error: "Hero 슬라이더는 최대 5개까지 선택할 수 있습니다." }, { status: 400 });
+    }
   }
 
-  projects[index] = { ...projects[index], inHero: !currentlyInHero };
+  projects[index] = { ...projects[index], inHero: newInHero };
 
   const result = await writeProjectsAsync(projects);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
