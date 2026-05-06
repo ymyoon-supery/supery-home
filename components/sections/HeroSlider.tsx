@@ -68,14 +68,26 @@ export default function HeroSlider({ slides }: Props) {
           transition={{ duration: 0.7, ease: [0.32, 0, 0.67, 0] }}
           className="absolute inset-0"
         >
+          {/* Desktop image */}
           <Image
-            src={slides[current].image}
+            src={slides[current].heroImage || slides[current].image}
             alt={slides[current].title}
             fill
-            className="object-cover"
+            className={`object-cover ${slides[current].heroImageMobile ? "hidden md:block" : ""}`}
             priority={current === 0}
-            sizes="100vw"
+            sizes="(min-width: 768px) 100vw, 0vw"
           />
+          {/* Mobile image — only rendered when a mobile-specific image exists */}
+          {slides[current].heroImageMobile && (
+            <Image
+              src={slides[current].heroImageMobile}
+              alt={slides[current].title}
+              fill
+              className="object-cover md:hidden"
+              priority={current === 0}
+              sizes="(max-width: 767px) 100vw, 0vw"
+            />
+          )}
           {/* Dark overlay */}
           <div className="absolute inset-0 bg-black/50" />
         </motion.div>
