@@ -62,7 +62,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
       {/* 대표이미지 — PC: heroImage, 모바일: heroImageMobile, 미등록 시 image */}
       <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
-        <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-[var(--bg-card)]">
+        <div className="relative w-full aspect-[4/5] md:aspect-[16/9] rounded-2xl overflow-hidden bg-[var(--bg-card)]">
           {/* PC */}
           <Image
             src={project.heroImage || project.image}
