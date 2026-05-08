@@ -25,8 +25,8 @@ export async function PUT(req: NextRequest, { params }: Props) {
     categoryLabel: categoryLabels[category as Category] ?? category,
     description: description ?? "",
     image,
-    heroImage: heroImage ?? undefined,
-    heroImageMobile: heroImageMobile ?? undefined,
+    heroImage: heroImage || undefined,
+    heroImageMobile: heroImageMobile || undefined,
     media: media ?? [],
     featured: Boolean(featured),
   });

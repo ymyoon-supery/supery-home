@@ -73,21 +73,19 @@ export default function HeroSlider({ slides }: Props) {
             src={slides[current].heroImage || slides[current].image}
             alt={slides[current].title}
             fill
-            className={`object-cover ${slides[current].heroImageMobile ? "hidden md:block" : ""}`}
+            className="object-cover hidden md:block"
             priority={current === 0}
             sizes="(min-width: 768px) 100vw, 0vw"
           />
-          {/* Mobile image — only rendered when a mobile-specific image exists */}
-          {slides[current].heroImageMobile && (
-            <Image
-              src={slides[current].heroImageMobile}
-              alt={slides[current].title}
-              fill
-              className="object-cover md:hidden"
-              priority={current === 0}
-              sizes="(max-width: 767px) 100vw, 0vw"
-            />
-          )}
+          {/* Mobile image — heroImageMobile if set, otherwise falls back to representative image */}
+          <Image
+            src={slides[current].heroImageMobile || slides[current].image}
+            alt={slides[current].title}
+            fill
+            className="object-cover md:hidden"
+            priority={current === 0}
+            sizes="(max-width: 767px) 100vw, 0vw"
+          />
           {/* Dark overlay */}
           <div className="absolute inset-0 bg-black/50" />
         </motion.div>

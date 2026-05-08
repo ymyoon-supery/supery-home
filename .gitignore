@@ -43,3 +43,6 @@ next-env.d.ts
 # admin data & uploads (서버에서 직접 관리)
 /data/
 /public/uploads/
+
+.vercel
+.env*.local
