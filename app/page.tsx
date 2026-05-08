@@ -21,8 +21,8 @@ export default async function HomePage() {
       readSiteContentAsync(),
     ]);
     const slides = heroProjects.length > 0
-      ? heroProjects.map((p) => ({ ...p, image: p.heroImage || p.image }))
-      : allProjects.slice(0, 5).map((p) => ({ ...p, image: p.heroImage || p.image }));
+      ? heroProjects
+      : allProjects.slice(0, 5);
 
     return (
       <>
