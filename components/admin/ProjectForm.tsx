@@ -418,7 +418,7 @@ export default function ProjectForm({ project }: Props) {
         <label className="block text-xs font-semibold tracking-widest text-[#777] uppercase mb-2">
           Hero 슬라이더 모바일 이미지 <span className="text-[#1A1A1A] normal-case font-normal">(9:16 또는 4:5 권장)</span>
         </label>
-        <p className="text-xs text-[#AAA] mb-3">모바일 전용 세로형 이미지입니다. 미등록 시 기본 Hero 이미지가 사용됩니다.</p>
+        <p className="text-xs text-[#AAA] mb-3">모바일 전용 세로형 이미지입니다. 미등록 시 대표이미지가 사용됩니다.</p>
         <div className="flex items-start gap-4">
           {heroImageMobile ? (
             <div className="relative rounded-xl overflow-hidden bg-[#F5F5F3] border border-[#E0E0DC]" style={{ width: 80, aspectRatio: "9/16" }}>
