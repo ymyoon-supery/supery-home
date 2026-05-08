@@ -60,18 +60,8 @@ export default async function ProjectDetailPage({ params }: Props) {
         </Link>
       </div>
 
-      {/* Hero + Gallery + Lightbox */}
-      <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
-        <GalleryLightbox
-          mediaList={mediaList}
-          coverIndex={effectiveCoverIndex}
-          projectTitle={project.title}
-          projectImage={project.image}
-        />
-      </AnimatedSection>
-
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12">
+      <div className="max-w-4xl mx-auto px-6 lg:px-8 pt-8 pb-4">
         <AnimatedSection>
           <p className="text-xs font-semibold tracking-[0.3em] text-[var(--text-caption)] uppercase mb-4">
             {project.categoryLabel}
@@ -85,9 +75,19 @@ export default async function ProjectDetailPage({ params }: Props) {
             </p>
           )}
         </AnimatedSection>
+      </div>
 
-        {/* Media gallery — GalleryLightbox 내부에 포함됨 */}
+      {/* Gallery */}
+      <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
+        <GalleryLightbox
+          mediaList={mediaList}
+          coverIndex={effectiveCoverIndex}
+          projectTitle={project.title}
+          projectImage={project.image}
+        />
+      </AnimatedSection>
 
+      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12">
         {/* Divider */}
         <div className="h-px bg-[var(--border)] my-12" />
 
