@@ -57,9 +57,6 @@ export default function PortfolioPreview({ projects }: Props) {
                     {project.categoryLabel}
                   </span>
                   <h3 className="text-white font-bold text-lg leading-snug">{project.title}</h3>
-                  {project.description && (
-                    <p className="text-white/70 text-sm mt-1">{project.description}</p>
-                  )}
                 </div>
               </Link>
             </AnimatedSection>
