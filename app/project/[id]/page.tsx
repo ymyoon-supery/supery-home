@@ -60,7 +60,21 @@ export default async function ProjectDetailPage({ params }: Props) {
         </Link>
       </div>
 
-      {/* Content */}
+      {/* 대표이미지 */}
+      <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
+        <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-[var(--bg-card)]">
+          <Image
+            src={project.image}
+            alt={project.title}
+            fill
+            className="object-cover"
+            priority
+            sizes="(max-width: 768px) 100vw, 80vw"
+          />
+        </div>
+      </AnimatedSection>
+
+      {/* 카테고리 · 제목 · 설명 */}
       <div className="max-w-4xl mx-auto px-6 lg:px-8 pt-8 pb-4">
         <AnimatedSection>
           <p className="text-xs font-semibold tracking-[0.3em] text-[var(--text-caption)] uppercase mb-4">
