@@ -91,8 +91,8 @@ export async function updateProject(id: string, patch: Partial<Project>): Promis
     if (patch.categoryLabel !== undefined) row.category_label = patch.categoryLabel;
     if (patch.description !== undefined) row.description = patch.description;
     if (patch.image !== undefined) row.image = patch.image;
-    if (patch.heroImage !== undefined) row.hero_image = patch.heroImage;
-    if (patch.heroImageMobile !== undefined) row.hero_image_mobile = patch.heroImageMobile;
+    if ('heroImage' in patch) row.hero_image = patch.heroImage ?? null;
+    if ('heroImageMobile' in patch) row.hero_image_mobile = patch.heroImageMobile ?? null;
     if (patch.inHero !== undefined) row.in_hero = patch.inHero;
     if (patch.media !== undefined) row.media = patch.media;
     if (patch.featured !== undefined) row.featured = patch.featured;
