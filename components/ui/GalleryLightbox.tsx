@@ -117,7 +117,7 @@ export default function GalleryLightbox({ mediaList, coverIndex, projectTitle, p
             <div
               key={realIndex}
               onClick={() => setActiveIndex(realIndex)}
-              className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--bg-card)] cursor-pointer group"
+              className="relative aspect-[4/5] sm:aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--bg-card)] cursor-pointer group"
             >
               {item.type === "youtube" ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
