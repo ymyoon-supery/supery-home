@@ -60,16 +60,26 @@ export default async function ProjectDetailPage({ params }: Props) {
         </Link>
       </div>
 
-      {/* 대표이미지 */}
+      {/* 대표이미지 — PC: heroImage, 모바일: heroImageMobile, 미등록 시 image */}
       <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
         <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-[var(--bg-card)]">
+          {/* PC */}
           <Image
-            src={project.image}
+            src={project.heroImage || project.image}
             alt={project.title}
             fill
-            className="object-cover"
+            className="object-cover hidden md:block"
             priority
-            sizes="(max-width: 768px) 100vw, 80vw"
+            sizes="(min-width: 768px) 80vw, 0vw"
+          />
+          {/* Mobile */}
+          <Image
+            src={project.heroImageMobile || project.image}
+            alt={project.title}
+            fill
+            className="object-cover md:hidden"
+            priority
+            sizes="(max-width: 767px) 100vw, 0vw"
           />
         </div>
       </AnimatedSection>
