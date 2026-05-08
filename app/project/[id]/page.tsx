@@ -108,6 +108,7 @@ export default async function ProjectDetailPage({ params }: Props) {
           coverIndex={effectiveCoverIndex}
           projectTitle={project.title}
           projectImage={project.image}
+          hideCover
         />
       </AnimatedSection>
 

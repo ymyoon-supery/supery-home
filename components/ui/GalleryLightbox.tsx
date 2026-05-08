@@ -15,9 +15,10 @@ interface Props {
   coverIndex: number;      // 대표 항목 인덱스
   projectTitle: string;
   projectImage: string;    // 대표 이미지 URL (히어로 표시용)
+  hideCover?: boolean;     // true면 커버(히어로) 섹션을 렌더링하지 않음
 }
 
-export default function GalleryLightbox({ mediaList, coverIndex, projectTitle, projectImage }: Props) {
+export default function GalleryLightbox({ mediaList, coverIndex, projectTitle, projectImage, hideCover = false }: Props) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
 
@@ -61,8 +62,8 @@ export default function GalleryLightbox({ mediaList, coverIndex, projectTitle, p
 
   return (
     <>
-      {/* 히어로 — 클릭 시 라이트박스 */}
-      <div
+      {/* 히어로 — 클릭 시 라이트박스 (hideCover=true 이면 렌더링 생략) */}
+      {!hideCover && <div
         onClick={() => setActiveIndex(coverIndex)}
         className="cursor-pointer"
       >
@@ -98,7 +99,7 @@ export default function GalleryLightbox({ mediaList, coverIndex, projectTitle, p
             </div>
           </div>
         )}
-      </div>
+      </div>}
 
       {/* 썸네일 그리드 — 대표 항목 제외 */}
       {mediaList.length > 1 && (
