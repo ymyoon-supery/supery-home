@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,6 +30,27 @@ export default function HeroSlider({ slides }: Props) {
     setCurrent(nextIndex);
   }, [current, count]);
 
+  const prev = useCallback(() => {
+    if (count === 0) return;
+    setDirection(-1);
+    setCurrent((current - 1 + count) % count);
+  }, [current, count]);
+
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 50) return;
+    if (delta < 0) next();
+    else prev();
+  }, [next, prev]);
+
   // Auto-advance every 5 seconds
   useEffect(() => {
     if (count === 0) return;
@@ -55,7 +76,11 @@ export default function HeroSlider({ slides }: Props) {
   };
 
   return (
-    <section className="relative w-full h-svh min-h-[500px] overflow-hidden bg-[#111]">
+    <section
+      className="relative w-full h-svh min-h-[500px] overflow-hidden bg-[#111]"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Slides */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
@@ -152,11 +177,7 @@ export default function HeroSlider({ slides }: Props) {
 
       {/* Prev / Next arrows */}
       <button
-        onClick={() => {
-          const prev = (current - 1 + slides.length) % slides.length;
-          setDirection(-1);
-          setCurrent(prev);
-        }}
+        onClick={prev}
         aria-label="Previous slide"
         className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white transition-all"
       >
@@ -165,10 +186,7 @@ export default function HeroSlider({ slides }: Props) {
         </svg>
       </button>
       <button
-        onClick={() => {
-          setDirection(1);
-          setCurrent((current + 1) % slides.length);
-        }}
+        onClick={next}
         aria-label="Next slide"
         className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white transition-all"
       >
