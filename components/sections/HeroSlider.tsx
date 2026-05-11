@@ -13,6 +13,7 @@ interface Props {
 export default function HeroSlider({ slides }: Props) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [mouseDown, setMouseDown] = useState(false);
   const count = slides?.length ?? 0;
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -45,6 +46,30 @@ export default function HeroSlider({ slides }: Props) {
     const timer = setInterval(next, 5000);
     return () => clearInterval(timer);
   }, [next, count]);
+
+  // Mouse drag (desktop)
+  const mouseDragStartX = useRef<number | null>(null);
+
+  useEffect(() => {
+    const onMouseMove = () => {}; // just to prevent text selection cursor flicker
+
+    const onMouseUp = (e: MouseEvent) => {
+      if (mouseDragStartX.current === null) return;
+      const delta = e.clientX - mouseDragStartX.current;
+      mouseDragStartX.current = null;
+      setMouseDown(false);
+      if (Math.abs(delta) < 50) return;
+      if (delta < 0) next();
+      else prev();
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [next, prev]);
 
   // Native touch swipe with passive:false on touchmove to block browser scroll
   useEffect(() => {
@@ -108,8 +133,12 @@ export default function HeroSlider({ slides }: Props) {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full h-svh min-h-[500px] overflow-hidden bg-[#111]"
+      className={`relative w-full h-svh min-h-[500px] overflow-hidden bg-[#111] ${mouseDown ? "cursor-grabbing select-none" : "cursor-grab"}`}
       style={{ touchAction: "pan-y" }}
+      onMouseDown={(e) => {
+        mouseDragStartX.current = e.clientX;
+        setMouseDown(true);
+      }}
     >
       {/* Slides */}
       <AnimatePresence initial={false} custom={direction}>
