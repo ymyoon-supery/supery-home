@@ -277,7 +277,7 @@ export default function Header() {
                           transition={{ duration: 0.25 }}
                           className="overflow-hidden mt-4 w-full"
                         >
-                          <div className="flex flex-col items-center gap-3 border-t border-[var(--border)] pt-4">
+                          <div className="flex flex-col items-center gap-1 border-t border-[var(--border)] pt-4">
                             {link.sub.map((sub) => (
                               <Link
                                 key={sub.href}
@@ -286,7 +286,7 @@ export default function Header() {
                                   setMenuOpen(false);
                                   setMobileProjectOpen(false);
                                 }}
-                                className="text-sm font-semibold tracking-widest text-[var(--text-heading)] opacity-60 hover:opacity-100 transition-opacity"
+                                className="block w-full text-center py-3 px-4 text-sm font-semibold tracking-widest text-[var(--text-heading)] opacity-60 active:opacity-100 hover:opacity-100 transition-opacity touch-manipulation"
                               >
                                 {sub.label}
                               </Link>

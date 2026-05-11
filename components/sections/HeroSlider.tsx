@@ -12,8 +12,13 @@ interface Props {
 
 export default function HeroSlider({ slides }: Props) {
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(1); // 1: next, -1: prev
+  const [direction, setDirection] = useState(1);
   const count = slides?.length ?? 0;
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Refs so stable callbacks can always read latest count
+  const countRef = useRef(count);
+  useEffect(() => { countRef.current = count; }, [count]);
 
   const goTo = useCallback(
     (index: number) => {
@@ -23,40 +28,65 @@ export default function HeroSlider({ slides }: Props) {
     [current]
   );
 
+  // Stable references — no deps on current/count (use functional updater + ref)
   const next = useCallback(() => {
-    if (count === 0) return;
-    const nextIndex = (current + 1) % count;
     setDirection(1);
-    setCurrent(nextIndex);
-  }, [current, count]);
-
-  const prev = useCallback(() => {
-    if (count === 0) return;
-    setDirection(-1);
-    setCurrent((current - 1 + count) % count);
-  }, [current, count]);
-
-  const touchStartX = useRef<number | null>(null);
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+    setCurrent(c => (c + 1) % countRef.current);
   }, []);
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
-    const delta = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
-    if (Math.abs(delta) < 50) return;
-    if (delta < 0) next();
-    else prev();
-  }, [next, prev]);
+  const prev = useCallback(() => {
+    setDirection(-1);
+    setCurrent(c => (c - 1 + countRef.current) % countRef.current);
+  }, []);
 
-  // Auto-advance every 5 seconds
+  // Auto-advance every 5 seconds — next is stable so this runs once
   useEffect(() => {
     if (count === 0) return;
     const timer = setInterval(next, 5000);
     return () => clearInterval(timer);
   }, [next, count]);
+
+  // Native touch swipe with passive:false on touchmove to block browser scroll
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    let startX = 0;
+    let startY = 0;
+    let isHorizontal = false;
+
+    const onStart = (e: TouchEvent) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      isHorizontal = false;
+    };
+
+    const onMove = (e: TouchEvent) => {
+      const dx = Math.abs(e.touches[0].clientX - startX);
+      const dy = Math.abs(e.touches[0].clientY - startY);
+      if (!isHorizontal && dx > dy && dx > 8) isHorizontal = true;
+      if (isHorizontal) e.preventDefault();
+    };
+
+    const onEnd = (e: TouchEvent) => {
+      if (!isHorizontal) return;
+      const delta = e.changedTouches[0].clientX - startX;
+      isHorizontal = false;
+      if (Math.abs(delta) < 50) return;
+      if (delta < 0) next();
+      else prev();
+    };
+
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: false });
+    el.addEventListener("touchend", onEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+      el.removeEventListener("touchend", onEnd);
+    };
+  }, [next, prev]);
 
   if (count === 0) return null;
 
@@ -77,9 +107,8 @@ export default function HeroSlider({ slides }: Props) {
 
   return (
     <section
+      ref={sectionRef}
       className="relative w-full h-svh min-h-[500px] overflow-hidden bg-[#111]"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
     >
       {/* Slides */}
       <AnimatePresence initial={false} custom={direction}>
