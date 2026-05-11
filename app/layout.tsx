@@ -58,9 +58,19 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning className={notoSansKR.variable}>
       <head>
+        {/* DNS prefetch & preconnect for external resources */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        {/* Pretendard — preload first, then apply as stylesheet (non-render-blocking) */}
+        <link
+          rel="preload"
+          as="style"
+          crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
         <link
           rel="stylesheet"
-          as="style"
           crossOrigin="anonymous"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />

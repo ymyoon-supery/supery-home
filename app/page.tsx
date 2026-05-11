@@ -1,10 +1,13 @@
+import dynamic from "next/dynamic";
 import GradientHero from "@/components/sections/GradientHero";
 import HeroSlider from "@/components/sections/HeroSlider";
-import ServicesSection from "@/components/sections/ServicesSection";
-import PortfolioPreview from "@/components/sections/PortfolioPreview";
 import { getHeroProjectsFromData, readProjectsAsync } from "@/lib/data";
 import { readSiteContentAsync } from "@/lib/siteData";
 import type { Metadata } from "next";
+
+// 폴드 아래 컴포넌트 — lazy load로 초기 번들에서 제외
+const ServicesSection = dynamic(() => import("@/components/sections/ServicesSection"));
+const PortfolioPreview = dynamic(() => import("@/components/sections/PortfolioPreview"));
 
 export const metadata: Metadata = {
   title: "SUPER Y | 광고 마케팅 에이전시",

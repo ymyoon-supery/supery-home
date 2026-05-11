@@ -88,20 +88,8 @@ export default function GradientHero() {
 
       {/* Content */}
       <div className="relative z-10 text-center px-6">
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-xs font-semibold tracking-[0.4em] text-white/40 uppercase mb-6"
-        >
-          Marketing Agency
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.4 }}
-          className="mb-8"
-        >
+        {/* 로고 — SSR HTML에서 즉시 표시 (opacity 애니메이션 없음) */}
+        <div className="mb-8">
           <Image
             src="https://res.cloudinary.com/deitwd6wh/image/upload/v1775807828/Logo_white_dia_wfd3jw.png"
             alt="SUPER Y"
@@ -110,11 +98,19 @@ export default function GradientHero() {
             className="mx-auto w-44 md:w-[268px] lg:w-[336px] h-auto object-contain"
             priority
           />
-        </motion.div>
+        </div>
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-xs font-semibold tracking-[0.4em] text-white/40 uppercase mb-6"
+        >
+          Marketing Agency
+        </motion.p>
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           className="text-white/50 text-base md:text-lg max-w-md mx-auto leading-relaxed"
         >
           GOOD IDEA는 좋은 인사이트에서 출발합니다.
