@@ -109,7 +109,7 @@ export default function HeroSlider({ slides }: Props) {
                 {slides[current].title}
               </h2>
               {slides[current].description && (
-                <p className="text-white/65 text-base md:text-lg mb-8 max-w-xl leading-relaxed">
+                <p className="hidden md:block text-white/65 text-base md:text-lg mb-8 max-w-xl leading-relaxed">
                   {slides[current].description}
                 </p>
               )}
