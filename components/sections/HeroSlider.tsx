@@ -109,6 +109,7 @@ export default function HeroSlider({ slides }: Props) {
     <section
       ref={sectionRef}
       className="relative w-full h-svh min-h-[500px] overflow-hidden bg-[#111]"
+      style={{ touchAction: "pan-y" }}
     >
       {/* Slides */}
       <AnimatePresence initial={false} custom={direction}>

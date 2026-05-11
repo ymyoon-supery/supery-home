@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/components/ui/ThemeProvider";
 import Image from "next/image";
@@ -31,6 +31,7 @@ export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileProjectOpen, setMobileProjectOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -234,89 +235,91 @@ export default function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-40 bg-[var(--bg-main)] flex flex-col items-center justify-center overflow-y-auto py-24"
+            className="fixed inset-0 z-40 bg-[var(--bg-main)] overflow-y-auto"
           >
-            <nav className="flex flex-col items-center gap-6 w-full px-8">
-              {navLinks.map((link, i) =>
-                link.sub ? (
-                  /* PROJECT with accordion */
-                  <motion.div
-                    key={link.href}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                    className="flex flex-col items-center w-full max-w-xs"
-                  >
-                    <button
-                      onClick={() => setMobileProjectOpen((v) => !v)}
-                      className={`flex items-center gap-2 text-3xl font-bold tracking-widest transition-colors ${
-                        isProject ? "text-[var(--text-heading)]" : "text-[var(--text-heading)] opacity-50"
-                      }`}
+            {/* inner wrapper: centers when short, scrolls when tall */}
+            <div className="flex flex-col items-center justify-center min-h-full py-28 px-8">
+              <nav className="flex flex-col items-center gap-6 w-full">
+                {navLinks.map((link, i) =>
+                  link.sub ? (
+                    /* PROJECT with accordion */
+                    <motion.div
+                      key={link.href}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.08 }}
+                      className="flex flex-col items-center w-full max-w-xs"
                     >
-                      {link.label}
-                      <motion.svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2.5}
-                        stroke="currentColor"
-                        className="w-5 h-5"
-                        animate={{ rotate: mobileProjectOpen ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
+                      <button
+                        onPointerDown={() => setMobileProjectOpen((v) => !v)}
+                        className={`flex items-center gap-2 text-3xl font-bold tracking-widest transition-colors touch-manipulation ${
+                          isProject ? "text-[var(--text-heading)]" : "text-[var(--text-heading)] opacity-50"
+                        }`}
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                      </motion.svg>
-                    </button>
-
-                    <AnimatePresence>
-                      {mobileProjectOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25 }}
-                          className="overflow-hidden mt-4 w-full"
+                        {link.label}
+                        <motion.svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2.5}
+                          stroke="currentColor"
+                          className="w-5 h-5"
+                          animate={{ rotate: mobileProjectOpen ? 180 : 0 }}
+                          transition={{ duration: 0.2 }}
                         >
-                          <div className="flex flex-col items-center gap-1 border-t border-[var(--border)] pt-4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </motion.svg>
+                      </button>
+
+                      {/* accordion: fade only, no height animation to avoid overflow-hidden clipping */}
+                      <AnimatePresence>
+                        {mobileProjectOpen && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="mt-4 w-full border-t border-[var(--border)] pt-2"
+                          >
                             {link.sub.map((sub) => (
-                              <Link
+                              <button
                                 key={sub.href}
-                                href={sub.href}
-                                onClick={() => {
+                                onPointerDown={() => {
                                   setMenuOpen(false);
                                   setMobileProjectOpen(false);
+                                  router.push(sub.href);
                                 }}
                                 className="block w-full text-center py-3 px-4 text-sm font-semibold tracking-widest text-[var(--text-heading)] opacity-60 active:opacity-100 hover:opacity-100 transition-opacity touch-manipulation"
                               >
                                 {sub.label}
-                              </Link>
+                              </button>
                             ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key={link.href}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                  >
-                    <Link
-                      href={link.href}
-                      className={`text-3xl font-bold tracking-widest transition-colors ${
-                        pathname === link.href
-                          ? "text-[var(--text-heading)]"
-                          : "text-[var(--text-heading)] opacity-50 hover:opacity-100"
-                      }`}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key={link.href}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.08 }}
                     >
-                      {link.label}
-                    </Link>
-                  </motion.div>
-                )
-              )}
-            </nav>
+                      <Link
+                        href={link.href}
+                        className={`text-3xl font-bold tracking-widest transition-colors touch-manipulation ${
+                          pathname === link.href
+                            ? "text-[var(--text-heading)]"
+                            : "text-[var(--text-heading)] opacity-50 hover:opacity-100"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    </motion.div>
+                  )
+                )}
+              </nav>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
