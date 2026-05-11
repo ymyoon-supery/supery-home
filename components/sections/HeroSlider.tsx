@@ -152,16 +152,16 @@ export default function HeroSlider({ slides }: Props) {
           transition={{ duration: 0.7, ease: [0.32, 0, 0.67, 0] }}
           className="absolute inset-0"
         >
-          {/* Desktop image */}
+          {/* Desktop image — priority only on desktop (no mobile preload) */}
           <Image
             src={slides[current].heroImage || slides[current].image}
             alt={slides[current].title}
             fill
             className="object-cover hidden md:block"
-            priority={current === 0}
+            priority={false}
             sizes="(min-width: 768px) 100vw, 0vw"
           />
-          {/* Mobile image — heroImageMobile if set, otherwise falls back to representative image */}
+          {/* Mobile image — priority on first slide for fast LCP */}
           <Image
             src={slides[current].heroImageMobile || slides[current].image}
             alt={slides[current].title}
