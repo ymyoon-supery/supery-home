@@ -110,14 +110,14 @@ export default function GalleryLightbox({ mediaList, coverIndex, projectTitle, p
           </h2>
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {mediaList.map((item, realIndex) => {
           if (realIndex === coverIndex) return null;
           return (
             <div
               key={realIndex}
               onClick={() => setActiveIndex(realIndex)}
-              className="relative aspect-[4/5] sm:aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--bg-card)] cursor-pointer group"
+              className="relative aspect-square sm:aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-[var(--bg-card)] cursor-pointer group"
             >
               {item.type === "youtube" ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
