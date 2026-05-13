@@ -115,7 +115,7 @@ export default async function ProjectDetailPage({ params }: Props) {
             {project.title}
           </h1>
           {project.description && (
-            <p className="text-[var(--text-body)] text-lg leading-relaxed whitespace-pre-wrap">
+            <p className="text-[var(--text-body)] text-lg md:text-xl leading-relaxed whitespace-pre-wrap">
               {project.description}
             </p>
           )}
