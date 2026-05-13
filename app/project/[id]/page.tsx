@@ -31,6 +31,27 @@ export default async function ProjectDetailPage({ params }: Props) {
     : [{ url: project.image, type: "image" as const }]
   ).filter(Boolean);
 
+  // 같은 카테고리 내 이전·다음 프로젝트 (순환)
+  const sameCategory = projects.filter((p) => p.category === project.category);
+  const currentIdx = sameCategory.findIndex((p) => p.id === project.id);
+  const hasSiblings = sameCategory.length >= 2;
+  const prevProject = hasSiblings
+    ? sameCategory[(currentIdx - 1 + sameCategory.length) % sameCategory.length]
+    : null;
+  const nextProject = hasSiblings
+    ? sameCategory[(currentIdx + 1) % sameCategory.length]
+    : null;
+  // 카테고리에 프로젝트가 2개뿐이면 prev === next → 하나만 표시
+  const siblingPair =
+    prevProject && nextProject && prevProject.id !== nextProject.id
+      ? [
+          { project: prevProject, label: "이전 프로젝트" },
+          { project: nextProject, label: "다음 프로젝트" },
+        ]
+      : nextProject
+      ? [{ project: nextProject, label: "다음 프로젝트" }]
+      : [];
+
   // 대표 항목 식별: YouTube는 URL에서 videoId 추출 후 project.image와 비교
   const coverIdx = mediaList.findIndex((item) => {
     if (item.type === "youtube") {
@@ -116,16 +137,14 @@ export default async function ProjectDetailPage({ params }: Props) {
         {/* Divider */}
         <div className="h-px bg-[var(--border)] my-12" />
 
-        {/* Related projects */}
-        <AnimatedSection>
-          <h2 className="text-sm font-semibold tracking-[0.2em] text-[var(--text-caption)] uppercase mb-8">
-            같은 카테고리 프로젝트
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {projects
-              .filter((p) => p.category === project.category && p.id !== project.id)
-              .slice(0, 2)
-              .map((related) => (
+        {/* Prev / Next in same category */}
+        {siblingPair.length > 0 && (
+          <AnimatedSection>
+            <h2 className="text-sm font-semibold tracking-[0.2em] text-[var(--text-caption)] uppercase mb-8">
+              같은 카테고리 프로젝트
+            </h2>
+            <div className={`grid gap-4 ${siblingPair.length === 1 ? "grid-cols-1 max-w-sm" : "grid-cols-1 sm:grid-cols-2"}`}>
+              {siblingPair.map(({ project: related, label }) => (
                 <Link
                   key={related.id}
                   href={`/project/${related.id}`}
@@ -138,14 +157,21 @@ export default async function ProjectDetailPage({ params }: Props) {
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 640px) 100vw, 50vw"
                   />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300" />
-                  <div className="absolute inset-0 flex flex-col justify-end p-5 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                    <p className="text-white font-semibold text-sm">{related.title}</p>
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/55 transition-all duration-300" />
+                  {/* 항상 표시되는 레이블 + 제목 */}
+                  <div className="absolute inset-0 flex flex-col justify-end p-5">
+                    <p className="text-white/60 text-xs font-semibold tracking-widest uppercase mb-1">
+                      {label}
+                    </p>
+                    <p className="text-white font-semibold text-sm leading-snug">
+                      {related.title}
+                    </p>
                   </div>
                 </Link>
               ))}
-          </div>
-        </AnimatedSection>
+            </div>
+          </AnimatedSection>
+        )}
       </div>
     </div>
   );
