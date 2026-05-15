@@ -30,8 +30,10 @@ export default function ProjectForm({ project }: Props) {
   });
   const [mediaItems, setMediaItems] = useState<MediaItem[]>(initMedia);
   const [coverIndex, setCoverIndex] = useState(0);
+  const [imageMobile, setImageMobile] = useState<string>(project?.imageMobile ?? "");
   const [heroImage, setHeroImage] = useState<string>(project?.heroImage ?? "");
   const [heroImageMobile, setHeroImageMobile] = useState<string>(project?.heroImageMobile ?? "");
+  const [uploadingImageMobile, setUploadingImageMobile] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
   const [uploadingHeroMobile, setUploadingHeroMobile] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -39,6 +41,7 @@ export default function ProjectForm({ project }: Props) {
   const [error, setError] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const imageMobileFileRef = useRef<HTMLInputElement>(null);
   const heroFileRef = useRef<HTMLInputElement>(null);
   const heroMobileFileRef = useRef<HTMLInputElement>(null);
 
@@ -69,6 +72,31 @@ export default function ProjectForm({ project }: Props) {
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
+  };
+
+  const handleImageMobileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImageMobile(true);
+    setError("");
+    try {
+      const cloudName = process.env.NEXT_PUBLIC_CLD_CLOUD_NAME;
+      const uploadPreset = process.env.NEXT_PUBLIC_CLD_UPLOAD_PRESET;
+      if (!cloudName || !uploadPreset) throw new Error("Cloudinary 환경 변수가 설정되지 않았습니다.");
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", uploadPreset);
+      fd.append("folder", "supery");
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message ?? "업로드 실패");
+      setImageMobile(data.secure_url);
+    } catch (err) {
+      setError(`모바일 대표이미지 업로드 오류: ${String(err)}`);
+    } finally {
+      setUploadingImageMobile(false);
+      if (imageMobileFileRef.current) imageMobileFileRef.current.value = "";
+    }
   };
 
   const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,6 +213,7 @@ export default function ProjectForm({ project }: Props) {
     const payload = {
       ...form,
       image: coverImageUrl,
+      imageMobile: imageMobile || undefined,
       heroImage: heroImage || undefined,
       heroImageMobile: heroImageMobile || undefined,
       media: reorderedMedia,
@@ -382,6 +411,38 @@ export default function ProjectForm({ project }: Props) {
           </div>
         )}
       </div>
+
+      {/* 모바일 전용 대표이미지 — 수정 시에만 표시 */}
+      {isEdit && <div>
+        <label className="block text-xs font-semibold tracking-widest text-[#777] uppercase mb-2">
+          모바일 전용 대표이미지 <span className="text-[#1A1A1A] normal-case font-normal">(4:5 또는 1:1 권장)</span>
+        </label>
+        <p className="text-xs text-[#AAA] mb-3">
+          미등록 시: 모바일 Hero 이미지 → PC 대표이미지 순으로 사용됩니다.
+        </p>
+        <div className="flex items-start gap-4">
+          {imageMobile ? (
+            <div className="relative rounded-xl overflow-hidden bg-[#F5F5F3] border border-[#E0E0DC]" style={{ width: 96, aspectRatio: "4/5" }}>
+              <Image src={imageMobile} alt="Mobile Cover" fill className="object-cover" unoptimized sizes="96px" />
+              <button
+                type="button"
+                onClick={() => setImageMobile("")}
+                className="absolute top-1 right-1 w-6 h-6 rounded-full bg-white text-red-500 flex items-center justify-center text-xs hover:bg-red-500 hover:text-white transition-colors"
+              >✕</button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => imageMobileFileRef.current?.click()}
+              disabled={uploadingImageMobile}
+              className="flex items-center gap-2 px-4 py-2 border border-dashed border-[#E0E0DC] rounded-xl text-sm text-[#777] hover:border-[#1A1A1A] transition-colors disabled:opacity-50"
+            >
+              {uploadingImageMobile ? "업로드 중..." : "+ 모바일 대표이미지 업로드"}
+            </button>
+          )}
+          <input ref={imageMobileFileRef} type="file" accept="image/*" onChange={handleImageMobileUpload} className="hidden" />
+        </div>
+      </div>}
 
       {/* Hero Image — 수정 시에만 표시 */}
       {isEdit && <div>

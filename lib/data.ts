@@ -11,6 +11,7 @@ function rowToProject(row: any): Project {
     categoryLabel: row.category_label,
     description: row.description ?? "",
     image: row.image,
+    imageMobile: row.image_mobile ?? undefined,
     heroImage: row.hero_image ?? undefined,
     heroImageMobile: row.hero_image_mobile ?? undefined,
     inHero: row.in_hero ?? false,
@@ -27,6 +28,7 @@ function projectToRow(p: Project) {
     category_label: p.categoryLabel,
     description: p.description ?? "",
     image: p.image,
+    image_mobile: p.imageMobile ?? null,
     hero_image: p.heroImage ?? null,
     hero_image_mobile: p.heroImageMobile ?? null,
     in_hero: p.inHero ?? false,
@@ -91,6 +93,7 @@ export async function updateProject(id: string, patch: Partial<Project>): Promis
     if (patch.categoryLabel !== undefined) row.category_label = patch.categoryLabel;
     if (patch.description !== undefined) row.description = patch.description;
     if (patch.image !== undefined) row.image = patch.image;
+    if ('imageMobile' in patch) row.image_mobile = patch.imageMobile ?? null;
     if ('heroImage' in patch) row.hero_image = patch.heroImage ?? null;
     if ('heroImageMobile' in patch) row.hero_image_mobile = patch.heroImageMobile ?? null;
     if (patch.inHero !== undefined) row.in_hero = patch.inHero;

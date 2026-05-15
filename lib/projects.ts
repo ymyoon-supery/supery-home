@@ -19,7 +19,8 @@ export interface Project {
   title: string;
   category: Exclude<Category, "all">;
   categoryLabel: string;
-  image: string; // 대표 이미지
+  image: string; // 대표 이미지 (PC)
+  imageMobile?: string; // 모바일 전용 대표이미지 (없으면 heroImageMobile → image 순 폴백)
   heroImage?: string; // Hero 슬라이더용 16:9 이미지 (없으면 image 사용)
   heroImageMobile?: string; // Hero 슬라이더 모바일 전용 이미지 (없으면 heroImage 또는 image 사용)
   inHero?: boolean; // Hero 슬라이더 노출 여부 (최대 5개)

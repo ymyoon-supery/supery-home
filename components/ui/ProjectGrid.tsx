@@ -56,12 +56,21 @@ export default function ProjectGrid({ initialCategory = "all", allProjects }: Pr
                 href={`/project/${project.id}`}
                 className="group block relative overflow-hidden rounded-2xl bg-[var(--bg-main)] aspect-[4/3]"
               >
+                {/* Mobile image */}
+                <Image
+                  src={project.imageMobile || project.heroImageMobile || project.image}
+                  alt={project.title}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105 md:hidden"
+                  sizes="(max-width: 767px) 100vw, 0px"
+                />
+                {/* Desktop image */}
                 <Image
                   src={project.image}
                   alt={project.title}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105 hidden md:block"
+                  sizes="(max-width: 1024px) 50vw, 33vw"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/55 transition-all duration-300" />
                 <div className="absolute inset-0 flex flex-col justify-end p-6 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">

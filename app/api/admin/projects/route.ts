@@ -9,7 +9,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { title, category, description, image, heroImage, media, featured } = body;
+  const { title, category, description, image, imageMobile, heroImage, media, featured } = body;
 
   if (!title || !category || !image) {
     return NextResponse.json({ error: "필수 항목이 누락되었습니다." }, { status: 400 });
@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
     category: category as Exclude<Category, "all">,
     categoryLabel: categoryLabels[category as Category] ?? category,
     image,
+    imageMobile: imageMobile ?? undefined,
     heroImage: heroImage ?? undefined,
     media: media ?? [],
     description: description ?? "",

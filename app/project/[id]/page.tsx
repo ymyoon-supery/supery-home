@@ -95,7 +95,7 @@ export default async function ProjectDetailPage({ params }: Props) {
           />
           {/* Mobile */}
           <Image
-            src={project.heroImageMobile || project.image}
+            src={project.imageMobile || project.heroImageMobile || project.image}
             alt={project.title}
             fill
             className="object-cover md:hidden"
@@ -150,12 +150,21 @@ export default async function ProjectDetailPage({ params }: Props) {
                   href={`/project/${related.id}`}
                   className="group block relative overflow-hidden rounded-2xl bg-[var(--bg-card)] aspect-[4/3]"
                 >
+                  {/* Mobile image */}
+                  <Image
+                    src={related.imageMobile || related.heroImageMobile || related.image}
+                    alt={related.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105 md:hidden"
+                    sizes="(max-width: 767px) 100vw, 0px"
+                  />
+                  {/* Desktop image */}
                   <Image
                     src={related.image}
                     alt={related.title}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 640px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105 hidden md:block"
+                    sizes="50vw"
                   />
                   <div className="absolute inset-0 bg-black/30 group-hover:bg-black/55 transition-all duration-300" />
                   {/* 항상 표시되는 레이블 + 제목 */}

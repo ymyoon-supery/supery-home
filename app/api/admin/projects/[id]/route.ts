@@ -17,7 +17,7 @@ export async function GET(_req: NextRequest, { params }: Props) {
 export async function PUT(req: NextRequest, { params }: Props) {
   const { id } = await params;
   const body = await req.json();
-  const { title, category, description, image, heroImage, heroImageMobile, media, featured } = body;
+  const { title, category, description, image, imageMobile, heroImage, heroImageMobile, media, featured } = body;
 
   const result = await updateProject(id, {
     title,
@@ -25,6 +25,7 @@ export async function PUT(req: NextRequest, { params }: Props) {
     categoryLabel: categoryLabels[category as Category] ?? category,
     description: description ?? "",
     image,
+    imageMobile: imageMobile || undefined,
     heroImage: heroImage || undefined,
     heroImageMobile: heroImageMobile || undefined,
     media: media ?? [],
