@@ -77,7 +77,7 @@ export default async function ContactPage() {
                     </p>
                     <p>
                       <span className="text-[var(--text-caption)]">Web.</span>{" "}
-                      <a href={`http://${contact.web}`} className="hover:text-[var(--text-heading)] transition-colors">
+                      <a href={`https://${contact.web}`} className="hover:text-[var(--text-heading)] transition-colors">
                         {contact.web}
                       </a>
                     </p>

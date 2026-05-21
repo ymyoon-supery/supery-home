@@ -45,7 +45,7 @@ export default async function Footer() {
                 ))}
               </p>
               <p>Tel. {footer.tel} | Fax. {footer.fax}</p>
-              <a href={`http://${footer.web}`} className="hover:text-white transition-colors">
+              <a href={`https://${footer.web}`} className="hover:text-white transition-colors">
                 {footer.web}
               </a>
             </address>
