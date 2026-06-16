@@ -43,6 +43,10 @@ const JSONBIN_API_KEY = process.env.JSONBIN_API_KEY ?? "";
 const JSONBIN_SITE_BIN_ID = process.env.JSONBIN_SITE_BIN_ID ?? "";
 const JSONBIN_BASE = "https://api.jsonbin.io/v3";
 
+// 5분 TTL 메모리 캐시 — 같은 함수 인스턴스 내 반복 API 호출 방지
+const CACHE_TTL_MS = 5 * 60 * 1000;
+let memCache: { data: SiteContent; at: number } | null = null;
+
 async function readFromJsonBin(): Promise<SiteContent | null> {
   if (!JSONBIN_API_KEY || !JSONBIN_SITE_BIN_ID) return null;
   try {
@@ -87,16 +91,23 @@ function mergeWithDefaults(saved: Partial<SiteContent>): SiteContent {
 
 // ─── Public API ────────────────────────────────────────────────────────────
 export async function readSiteContentAsync(): Promise<SiteContent> {
-  // 1. Try JSONBin (persistent, survives deployments)
+  // 1. 메모리 캐시 HIT — JSONBin 호출 없이 반환
+  if (memCache && Date.now() - memCache.at < CACHE_TTL_MS) {
+    return memCache.data;
+  }
+
+  // 2. Try JSONBin (persistent, survives deployments)
   if (JSONBIN_API_KEY && JSONBIN_SITE_BIN_ID) {
     const remote = await readFromJsonBin();
     if (remote) {
       const merged = mergeWithDefaults(remote);
-      writeLocalSiteContent(merged); // cache locally
+      memCache = { data: merged, at: Date.now() };
+      writeLocalSiteContent(merged);
       return merged;
     }
   }
-  // 2. Fallback to local file
+
+  // 3. Fallback to local file
   const local = readLocalSiteContent();
   return local ? mergeWithDefaults(local) : defaultSiteContent;
 }
@@ -104,4 +115,6 @@ export async function readSiteContentAsync(): Promise<SiteContent> {
 export async function writeSiteContentAsync(content: SiteContent): Promise<void> {
   writeLocalSiteContent(content);
   await writeToJsonBin(content);
+  // 쓰기 후 캐시 즉시 갱신 — 다음 읽기가 JSONBin을 다시 치지 않도록
+  memCache = { data: content, at: Date.now() };
 }
