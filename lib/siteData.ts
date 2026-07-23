@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { defaultSiteContent, type SiteContent } from "./siteContent";
+import { getSupabase } from "./supabase";
 
 // ─── Local file fallback ───────────────────────────────────────────────────
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -38,46 +39,38 @@ function writeLocalSiteContent(content: SiteContent): void {
   }
 }
 
-// ─── JSONBin.io persistent storage ────────────────────────────────────────
-const JSONBIN_API_KEY = process.env.JSONBIN_API_KEY ?? "";
-const JSONBIN_SITE_BIN_ID = process.env.JSONBIN_SITE_BIN_ID ?? "";
-const JSONBIN_BASE = "https://api.jsonbin.io/v3";
-
-// 5분 TTL 메모리 캐시 — 같은 함수 인스턴스 내 반복 API 호출 방지
-const CACHE_TTL_MS = 5 * 60 * 1000;
-let memCache: { data: SiteContent; at: number } | null = null;
-
-async function readFromJsonBin(): Promise<SiteContent | null> {
-  if (!JSONBIN_API_KEY || !JSONBIN_SITE_BIN_ID) return null;
+// ─── Supabase persistent storage ──────────────────────────────────────────
+async function readFromSupabase(): Promise<SiteContent | null> {
   try {
-    const res = await fetch(`${JSONBIN_BASE}/b/${JSONBIN_SITE_BIN_ID}/latest`, {
-      headers: { "X-Master-Key": JSONBIN_API_KEY },
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.record as SiteContent;
+    const { data, error } = await getSupabase()
+      .from("site_content")
+      .select("data")
+      .eq("id", 1)
+      .single();
+    if (error || !data) return null;
+    return data.data as SiteContent;
   } catch {
     return null;
   }
 }
 
-async function writeToJsonBin(content: SiteContent): Promise<boolean> {
-  if (!JSONBIN_API_KEY || !JSONBIN_SITE_BIN_ID) return false;
+async function writeToSupabase(content: SiteContent): Promise<boolean> {
   try {
-    const res = await fetch(`${JSONBIN_BASE}/b/${JSONBIN_SITE_BIN_ID}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": JSONBIN_API_KEY,
-      },
-      body: JSON.stringify(content),
-    });
-    return res.ok;
+    const { error } = await getSupabase()
+      .from("site_content")
+      .upsert(
+        { id: 1, data: content, updated_at: new Date().toISOString() },
+        { onConflict: "id" }
+      );
+    return !error;
   } catch {
     return false;
   }
 }
+
+// ─── 5분 TTL 메모리 캐시 ───────────────────────────────────────────────────
+const CACHE_TTL_MS = 5 * 60 * 1000;
+let memCache: { data: SiteContent; at: number } | null = null;
 
 // 저장된 데이터에 새 필드가 없을 때 기본값으로 채워주는 딥 머지
 function mergeWithDefaults(saved: Partial<SiteContent>): SiteContent {
@@ -91,34 +84,29 @@ function mergeWithDefaults(saved: Partial<SiteContent>): SiteContent {
 
 // ─── Public API ────────────────────────────────────────────────────────────
 export async function readSiteContentAsync(): Promise<SiteContent> {
-  // 1. 메모리 캐시 HIT — JSONBin 호출 없이 반환
+  // 1. 메모리 캐시 HIT
   if (memCache && Date.now() - memCache.at < CACHE_TTL_MS) {
     return memCache.data;
   }
 
-  // 2. Try JSONBin (persistent, survives deployments)
-  if (JSONBIN_API_KEY && JSONBIN_SITE_BIN_ID) {
-    const remote = await readFromJsonBin();
-    if (remote) {
-      const merged = mergeWithDefaults(remote);
-      memCache = { data: merged, at: Date.now() };
-      writeLocalSiteContent(merged);
-      return merged;
-    }
+  // 2. Supabase (persistent, survives deployments)
+  const remote = await readFromSupabase();
+  if (remote) {
+    const merged = mergeWithDefaults(remote);
+    memCache = { data: merged, at: Date.now() };
+    writeLocalSiteContent(merged);
+    return merged;
   }
 
-  // 3. Fallback to local file
+  // 3. Fallback: local file
   const local = readLocalSiteContent();
   return local ? mergeWithDefaults(local) : defaultSiteContent;
 }
 
 export async function writeSiteContentAsync(content: SiteContent): Promise<boolean> {
   writeLocalSiteContent(content);
-  if (JSONBIN_API_KEY && JSONBIN_SITE_BIN_ID) {
-    const remoteOk = await writeToJsonBin(content);
-    if (!remoteOk) return false;
-  }
-  // 쓰기 성공 후 캐시 갱신 — 다음 읽기가 JSONBin을 다시 치지 않도록
+  const ok = await writeToSupabase(content);
+  if (!ok) return false;
   memCache = { data: content, at: Date.now() };
   return true;
 }
