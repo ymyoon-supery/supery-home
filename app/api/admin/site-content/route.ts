@@ -17,11 +17,15 @@ export async function PUT(req: NextRequest) {
   const current = await readSiteContentAsync();
   const updated = { ...current, ...body };
 
-  await writeSiteContentAsync(updated);
+  const ok = await writeSiteContentAsync(updated);
 
   revalidatePath("/");
   revalidatePath("/about");
   revalidatePath("/contact");
+
+  if (!ok) {
+    return NextResponse.json({ error: "저장에 실패했습니다." }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -172,14 +172,23 @@ export default function SiteContentEditor({ initial }: Props) {
   const save = async (section: Tab) => {
     setLoading(true);
     setSaved(null);
-    await fetch("/api/admin/site-content", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [section]: content[section] }),
-    });
-    setLoading(false);
-    setSaved(section);
-    setTimeout(() => setSaved(null), 2000);
+    try {
+      const res = await fetch("/api/admin/site-content", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [section]: content[section] }),
+      });
+      if (res.ok) {
+        setSaved(section);
+        setTimeout(() => setSaved(null), 2000);
+      } else {
+        alert("저장에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      }
+    } catch {
+      alert("네트워크 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateServices = (patch: Partial<SiteContent["services"]>) =>

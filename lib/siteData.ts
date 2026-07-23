@@ -112,9 +112,13 @@ export async function readSiteContentAsync(): Promise<SiteContent> {
   return local ? mergeWithDefaults(local) : defaultSiteContent;
 }
 
-export async function writeSiteContentAsync(content: SiteContent): Promise<void> {
+export async function writeSiteContentAsync(content: SiteContent): Promise<boolean> {
   writeLocalSiteContent(content);
-  await writeToJsonBin(content);
-  // 쓰기 후 캐시 즉시 갱신 — 다음 읽기가 JSONBin을 다시 치지 않도록
+  if (JSONBIN_API_KEY && JSONBIN_SITE_BIN_ID) {
+    const remoteOk = await writeToJsonBin(content);
+    if (!remoteOk) return false;
+  }
+  // 쓰기 성공 후 캐시 갱신 — 다음 읽기가 JSONBin을 다시 치지 않도록
   memCache = { data: content, at: Date.now() };
+  return true;
 }
