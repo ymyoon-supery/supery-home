@@ -91,7 +91,7 @@ export default async function ContactPage() {
                   </h3>
                   <div className="rounded-2xl overflow-hidden border border-[var(--border)] aspect-[4/3]">
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3165.4927392714!2d127.02780!3d37.51760!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357ca15a4b9d6a65%3A0x5f5e6c4f4d2a3e8b!2s23+Nonhyeon-ro+135-gil%2C+Gangnam-gu%2C+Seoul!5e0!3m2!1sko!2skr!4v1700000000000!5m2!1sko!2skr"
+                      src="https://maps.google.com/maps?q=서울+성동구+상원12길+30+동진아이티타워&output=embed&hl=ko"
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
