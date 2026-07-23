@@ -91,7 +91,7 @@ export default async function ContactPage() {
                   </h3>
                   <div className="rounded-2xl overflow-hidden border border-[var(--border)] aspect-[4/3]">
                     <iframe
-                      src="https://maps.google.com/maps?q=서울+성동구+상원12길+30+동진아이티타워&output=embed&hl=ko"
+                      src="https://maps.google.com/maps?q=서울특별시+성동구+상원12길+30&output=embed&hl=ko&z=17"
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
